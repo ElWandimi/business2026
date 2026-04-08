@@ -1,0 +1,245 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard - Admin{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        border: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+    .stat-info h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+    }
+    .stat-info .value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--junle-green);
+    }
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--sky-blue-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--sky-blue-dark);
+        font-size: 2rem;
+    }
+    .trend {
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        color: var(--text-muted);
+    }
+    .trend.up { color: #10b981; }
+    .trend.down { color: #ef4444; }
+
+    .row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    @media (max-width: 900px) {
+        .row {
+            grid-template-columns: 1fr;
+        }
+    }
+    .card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+    }
+    .card-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-light);
+        background: var(--sky-blue-light);
+        color: var(--junle-green-dark);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .card-header i {
+        color: var(--sky-blue-dark);
+    }
+    .card-body {
+        padding: 1.5rem;
+    }
+    .activity-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-light);
+    }
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--bg-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--sky-blue-dark);
+    }
+    .activity-content {
+        flex: 1;
+    }
+    .activity-title {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+    .activity-time {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+    .badge-support {
+        background: var(--junle-green-light);
+        color: var(--junle-green);
+        border-radius: 1rem;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- Stats Cards -->
+    <div class="dashboard-cards">
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3>Total Orders</h3>
+                <div class="value">{{ total_orders }}</div>
+                <div class="trend up"><i class="fas fa-arrow-up"></i> 12%</div>
+            </div>
+            <div class="stat-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3>Revenue</h3>
+                <div class="value">${{ "%.2f"|format(total_revenue) }}</div>
+                <div class="trend up"><i class="fas fa-arrow-up"></i> 8%</div>
+            </div>
+            <div class="stat-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3>Products</h3>
+                <div class="value">{{ total_products }}</div>
+                <div class="trend down"><i class="fas fa-arrow-down"></i> 2%</div>
+            </div>
+            <div class="stat-icon">
+                <i class="fas fa-box"></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3>Customers</h3>
+                <div class="value">{{ total_users }}</div>
+                <div class="trend up"><i class="fas fa-arrow-up"></i> 5%</div>
+            </div>
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Orders -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="fas fa-clock"></i> Recent Orders</span>
+                <a href="{{ url_for('admin.orders') }}" style="color: var(--junle-green);">View all</a>
+            </div>
+            <div class="card-body">
+                {% if recent_orders %}
+                <ul class="activity-list">
+                    {% for order in recent_orders %}
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Order #{{ order.order_number }}</div>
+                            <div class="activity-time">${{ "%.2f"|format(order.total) }} • {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                        </div>
+                        <span class="badge bg-{{ 'success' if order.status == 'delivered' else 'warning' }}">{{ order.status }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No recent orders.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Support & Activity -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="fas fa-headset"></i> Recent Support</span>
+                <a href="{{ url_for('admin.support_dashboard') }}" style="color: var(--junle-green);">View all</a>
+            </div>
+            <div class="card-body">
+                {% if recent_support %}
+                <ul class="activity-list">
+                    {% for conv in recent_support %}
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">{{ conv.name }}</div>
+                            <div class="activity-time">{{ conv.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                        </div>
+                        <span class="badge-support">{{ conv.status }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No support conversations.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,184 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Order #{{ order.order_number }} - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3" style="color: #2d6a4f;">Order #{{ order.order_number }}</h1>
+        <a href="{{ url_for('admin.orders') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Orders
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Order Items -->
+            <div class="card shadow-sm mb-4" style="border-color: #a3d8f0;">
+                <div class="card-header" style="background-color: #d4f0d4; color: #2d6a4f;">
+                    <i class="fas fa-boxes"></i> Order Items
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead style="background-color: #a3d8f0;">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Variant</th>
+                                    <th>SKU</th>
+                                    <th>Price</th>
+                                    <th>Qty</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.image_url %}
+                                                <img src="{{ item.image_url }}" alt="{{ item.product_name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" class="me-2">
+                                            {% endif %}
+                                            <div>
+                                                {% if item.product_slug %}
+                                                    <a href="{{ url_for('main.product_detail', slug=item.product_slug) }}" target="_blank" style="color: #2d6a4f; text-decoration: none;">
+                                                        {{ item.product_name }}
+                                                    </a>
+                                                {% else %}
+                                                    {{ item.product_name }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if item.variant_size or item.variant_color %}
+                                            {{ item.variant_size or '' }} {{ item.variant_color or '' }}
+                                            {% if item.variant_color_code %}
+                                                <span style="display:inline-block; width:16px; height:16px; background-color:{{ item.variant_color_code }}; border-radius:4px;"></span>
+                                            {% endif %}
+                                        {% else %}
+                                            Default
+                                        {% endif %}
+                                    </td>
+                                    <td><code>{{ item.variant_sku or 'N/A' }}</code></td>
+                                    <td>${{ "%.2f"|format(item.price) }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>${{ "%.2f"|format(item.price * item.quantity) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Order Summary -->
+            <div class="card shadow-sm mb-4" style="border-color: #a3d8f0;">
+                <div class="card-header" style="background-color: #d4f0d4; color: #2d6a4f;">
+                    <i class="fas fa-calculator"></i> Order Summary
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span>Subtotal:</span>
+                        <span>${{ "%.2f"|format(order.subtotal) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Tax:</span>
+                        <span>${{ "%.2f"|format(order.tax) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Shipping:</span>
+                        <span>${{ "%.2f"|format(order.shipping_cost) }}</span>
+                    </div>
+                    {% if order.discount_amount and order.discount_amount > 0 %}
+                    <div class="d-flex justify-content-between text-success">
+                        <span>Discount ({{ order.coupon_code or 'Coupon' }}):</span>
+                        <span>-${{ "%.2f"|format(order.discount_amount) }}</span>
+                    </div>
+                    {% endif %}
+                    <hr>
+                    <div class="d-flex justify-content-between h5">
+                        <span style="color: #2d6a4f;">Total:</span>
+                        <span style="color: #2d6a4f;">${{ "%.2f"|format(order.total) }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Customer & Shipping -->
+            <div class="card shadow-sm mb-4" style="border-color: #a3d8f0;">
+                <div class="card-header" style="background-color: #d4f0d4; color: #2d6a4f;">
+                    <i class="fas fa-user"></i> Customer
+                </div>
+                <div class="card-body">
+                    {% if order.user %}
+                        <p><strong>Name:</strong> {{ order.user.full_name or order.user.username }}</p>
+                        <p><strong>Email:</strong> {{ order.user.email }}</p>
+                    {% else %}
+                        <p><strong>Guest Checkout</strong></p>
+                        <p><strong>Name:</strong> {{ order.shipping_first_name }} {{ order.shipping_last_name }}</p>
+                        <p><strong>Email:</strong> Not provided</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4" style="border-color: #a3d8f0;">
+                <div class="card-header" style="background-color: #d4f0d4; color: #2d6a4f;">
+                    <i class="fas fa-truck"></i> Shipping Address
+                </div>
+                <div class="card-body">
+                    <address>
+                        {{ order.shipping_first_name }} {{ order.shipping_last_name }}<br>
+                        {{ order.shipping_address }}<br>
+                        {{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_zip }}<br>
+                        {{ order.shipping_country }}<br>
+                        {% if order.shipping_phone %}<abbr title="Phone">P:</abbr> {{ order.shipping_phone }}{% endif %}
+                    </address>
+                </div>
+            </div>
+            
+            <!-- Update Order Status Form -->
+            <div class="card shadow-sm" style="border-color: #a3d8f0;">
+                <div class="card-header" style="background-color: #d4f0d4; color: #2d6a4f;">
+                    <i class="fas fa-edit"></i> Update Order
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.update_order', order_id=order.id) }}">
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Order Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>Processing</option>
+                                <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>Shipped</option>
+                                <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="payment_status" class="form-label">Payment Status</label>
+                            <select class="form-select" id="payment_status" name="payment_status">
+                                <option value="pending" {% if order.payment_status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="paid" {% if order.payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                                <option value="failed" {% if order.payment_status == 'failed' %}selected{% endif %}>Failed</option>
+                                <option value="refunded" {% if order.payment_status == 'refunded' %}selected{% endif %}>Refunded</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tracking_number" class="form-label">Tracking Number</label>
+                            <input type="text" class="form-control" id="tracking_number" name="tracking_number" value="{{ order.tracking_number or '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="carrier" class="form-label">Carrier</label>
+                            <input type="text" class="form-control" id="carrier" name="carrier" value="{{ order.carrier or '' }}">
+                        </div>
+                        <button type="submit" class="btn w-100" style="background-color: #a3d8f0; color: #000;">
+                            Update Order
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

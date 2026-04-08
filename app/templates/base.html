@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WandimiMart{% endblock %}</title>
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260302">
+    {% block extra_css %}{% endblock %}
+    <style>
+        :root {
+            --junle-green: #2E7D32;
+            --junle-green-light: #4CAF50;
+            --junle-green-dark: #1B5E20;
+            --sky-blue: #4FC3F7;
+            --sky-blue-light: #81D4FA;
+            --sky-blue-dark: #29B6F6;
+            --gradient-primary: linear-gradient(135deg, var(--junle-green), var(--sky-blue));
+            --gradient-hover: linear-gradient(135deg, var(--junle-green-dark), var(--sky-blue-dark));
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02), 0 4px 8px rgba(46,125,50,0.05);
+            --shadow-md: 0 4px 12px rgba(46,125,50,0.08);
+            --shadow-lg: 0 8px 24px rgba(46,125,50,0.12);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-full: 9999px;
+            --transition: 200ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: white;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0.75rem 0;
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-brand a {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-menu a {
+            color: #1e293b;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .nav-menu a:hover {
+            color: var(--junle-green);
+        }
+
+        .cart-link {
+            position: relative;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -10px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+        }
+
+        /* Support badge */
+        .support-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            margin-left: 0.25rem;
+            display: inline-block;
+        }
+
+        /* Notification bell */
+        .notification-link {
+            position: relative;
+        }
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -10px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+        }
+        .notification-dropdown {
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 0.5rem 0;
+        }
+        .notification-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: normal;
+            line-height: 1.4;
+        }
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        .notification-item.unread {
+            background: #f0f9ff;
+        }
+        .notification-item:hover {
+            background: #f1f5f9;
+        }
+        .notification-title {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .notification-message {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin: 0.2rem 0;
+        }
+        .notification-time {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        /* Dropdown */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            min-width: 180px;
+            display: none;
+            z-index: 1000;
+            padding: 0.5rem 0;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-menu a {
+            padding: 0.5rem 1rem;
+            display: block;
+            color: #1e293b;
+        }
+
+        .dropdown-menu a:hover {
+            background: #f1f5f9;
+            color: var(--junle-green);
+        }
+
+        /* Footer */
+        footer {
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 3rem;
+            padding: 2rem 0 0;
+        }
+
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3,
+        .footer-section h4 {
+            color: var(--junle-green-dark);
+            margin-bottom: 1rem;
+        }
+
+        .footer-section p,
+        .footer-section ul {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: #64748b;
+            text-decoration: none;
+            transition: color var(--transition);
+        }
+
+        .footer-section a:hover {
+            color: var(--sky-blue);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #e2e8f0;
+            padding: 1rem 0;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-top: 2rem;
+        }
+
+        /* Flash messages */
+        .flash-messages {
+            max-width: 1280px;
+            margin: 1rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .flash {
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .flash.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .nav-menu {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="{{ url_for('main.index') }}">WandimiMart</a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="{{ url_for('main.products') }}"><i class="fas fa-store"></i> Shop</a></li>
+                <li><a href="{{ url_for('main.contact') }}"><i class="fas fa-envelope"></i> Contact</a></li>
+                <li><a href="{{ url_for('main.gift_card') }}"><i class="fas fa-gift"></i> Gift Cards</a></li>
+                <li><a href="{{ url_for('support.start_conversation') }}"><i class="fas fa-headset"></i> Support
+                    {% if unresolved_support_count() > 0 %}
+                        <span class="support-badge">!</span>
+                    {% endif %}
+                </a></li>
+                <li class="cart-link">
+                    <a href="{{ url_for('cart.view_cart') }}">
+                        <i class="fas fa-shopping-cart"></i> Cart
+                        <span class="cart-count" id="cartCount">0</span>
+                    </a>
+                </li>
+                <!-- Currency Switcher -->
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle">
+                        <i class="fas fa-dollar-sign"></i> {{ session.get('currency', 'USD') }}
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('main.set_currency', curr='USD') }}">USD ($)</a>
+                        <a href="{{ url_for('main.set_currency', curr='EUR') }}">EUR (€)</a>
+                        <a href="{{ url_for('main.set_currency', curr='GBP') }}">GBP (£)</a>
+                        <a href="{{ url_for('main.set_currency', curr='JPY') }}">JPY (¥)</a>
+                        <a href="{{ url_for('main.set_currency', curr='KES') }}">KES (KSh)</a>
+                    </div>
+                </li>
+                <!-- Notifications -->
+                <li class="dropdown notification-link">
+                    <a href="#" class="dropdown-toggle" id="notificationBell">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationCount">0</span>
+                    </a>
+                    <div class="dropdown-menu notification-dropdown" id="notificationDropdown">
+                        <div class="dropdown-header d-flex justify-content-between align-items-center px-3 py-2">
+                            <span class="fw-bold">Notifications</span>
+                            <a href="{{ url_for('auth.notifications') }}" class="text-decoration-none small">View all</a>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div id="notificationList">
+                            <div class="text-center p-3 text-muted">Loading...</div>
+                        </div>
+                    </div>
+                </li>
+                {% if current_user.is_authenticated %}
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle">
+                        <i class="fas fa-user-circle"></i> {{ current_user.username }}
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('auth.profile') }}"><i class="fas fa-id-card"></i> Profile</a>
+                        <a href="{{ url_for('wishlist.view_wishlist') }}"><i class="fas fa-heart"></i> Wishlist</a>
+                        <a href="{{ url_for('auth.order_history') }}"><i class="fas fa-box"></i> My Orders</a>                        
+                        {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Admin</a>
+                        {% endif %}
+                        <a href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </li>
+                {% else %}
+                <li><a href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                <li><a href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>WandimiMart</h3>
+                <p>Your trusted online store for quality products. We offer the best prices and customer service.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="{{ url_for('main.index') }}">Home</a></li>
+                    <li><a href="{{ url_for('main.products') }}">Shop</a></li>
+                    <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+                    <li><a href="{{ url_for('main.faq') }}">FAQ</a></li>
+                    <li><a href="{{ url_for('main.terms') }}">Terms & Conditions</a></li>
+                    <li><a href="{{ url_for('main.privacy') }}">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Info</h4>
+                <p><i class="fas fa-envelope"></i> support@wandimimart.com</p>
+                <p><i class="fas fa-phone"></i> +254 719-000-999</p>
+                <p><i class="fas fa-map-marker-alt"></i> Mfangano Business St, Stall 100<br>Nairobi CBD,  00200</p>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <a href="#" style="margin-right: 0.5rem;"><i class="fab fa-facebook fa-lg"></i></a>
+                <a href="#" style="margin-right: 0.5rem;"><i class="fab fa-twitter fa-lg"></i></a>
+                <a href="#" style="margin-right: 0.5rem;"><i class="fab fa-instagram fa-lg"></i></a>
+                <a href="#"><i class="fab fa-linkedin fa-lg"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 WandimiMart. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function updateCartCount() {
+            fetch('/api/cart/count')
+                .then(res => res.json())
+                .then(data => {
+                    const el = document.getElementById('cartCount');
+                    if (el) {
+                        el.textContent = data.count;
+                        el.style.display = data.count > 0 ? 'inline' : 'none';
+                    }
+                })
+                .catch(err => console.error('Error updating cart count:', err));
+        }
+
+        // Notifications
+        function fetchNotifications() {
+            {% if current_user.is_authenticated %}
+            fetch('/api/notifications/unread')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('notificationCount').textContent = data.count;
+                    const list = document.getElementById('notificationList');
+                    if (data.notifications.length === 0) {
+                        list.innerHTML = '<div class="text-center p-3 text-muted">No new notifications</div>';
+                    } else {
+                        list.innerHTML = data.notifications.map(n => `
+                            <div class="notification-item ${n.is_read ? '' : 'unread'}" onclick="markNotificationRead(${n.id}); window.location.href='${n.link || '#'}'">
+                                <div class="notification-title">${n.title}</div>
+                                <div class="notification-message">${n.message}</div>
+                                <div class="notification-time">${n.created_at}</div>
+                            </div>
+                        `).join('');
+                    }
+                })
+                .catch(err => console.error('Error fetching notifications:', err));
+            {% else %}
+                document.getElementById('notificationCount').textContent = '0';
+                document.getElementById('notificationList').innerHTML = '<div class="text-center p-3 text-muted">Sign in to see notifications</div>';
+            {% endif %}
+        }
+
+        function markNotificationRead(id) {
+            fetch(`/auth/notification/${id}/read`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            }).catch(err => console.error('Error marking read:', err));
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            fetchNotifications();
+            setInterval(fetchNotifications, 30000); // refresh every 30 seconds
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+    {% include 'chat_widget.html' %}
+</body>
+</html>

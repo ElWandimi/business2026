@@ -1,0 +1,360 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Abandoned Carts - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .abandoned-page {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .page-header h1 {
+        font-size: 2.2rem;
+        font-weight: 600;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+    }
+    .page-header h1 i {
+        font-size: 2.2rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .filter-bar {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow-md);
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        border: 1px solid var(--border-light);
+    }
+    .filter-bar .search-box {
+        flex: 1;
+        min-width: 250px;
+        display: flex;
+        align-items: center;
+        background: var(--bg-light);
+        border-radius: 2rem;
+        padding: 0.3rem 0.3rem 0.3rem 1rem;
+        border: 1px solid var(--border-light);
+    }
+    .filter-bar .search-box i {
+        color: var(--text-muted);
+        margin-right: 0.5rem;
+    }
+    .filter-bar .search-box input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 0.6rem 0;
+        font-size: 1rem;
+        outline: none;
+    }
+    .filter-bar .search-box button {
+        background: var(--sky-blue);
+        border: none;
+        border-radius: 2rem;
+        padding: 0.6rem 1.5rem;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .filter-bar .search-box button:hover {
+        background: var(--sky-blue-dark);
+    }
+    .filter-bar .filter-group {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .filter-bar .filter-group select {
+        padding: 0.5rem 1.5rem 0.5rem 1rem;
+        border: 1px solid var(--border-light);
+        border-radius: 2rem;
+        background: white;
+        font-size: 0.95rem;
+        cursor: pointer;
+        outline: none;
+    }
+    .table-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        border: 1px solid var(--border-light);
+    }
+    .table-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .table-header i {
+        margin-right: 0.5rem;
+    }
+    .table-header .badge {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        font-size: 0.9rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 2rem;
+    }
+    .table-body {
+        padding: 1.5rem;
+        overflow-x: auto;
+    }
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .table th {
+        text-align: left;
+        padding: 1rem 0.75rem;
+        color: var(--junle-green-dark);
+        font-weight: 600;
+        border-bottom: 2px solid var(--sky-blue-light);
+        white-space: nowrap;
+    }
+    .table td {
+        padding: 1rem 0.75rem;
+        border-bottom: 1px solid var(--border-light);
+        vertical-align: middle;
+    }
+    .table tr:last-child td {
+        border-bottom: none;
+    }
+    .table tbody tr:hover {
+        background: var(--bg-light);
+    }
+    .badge-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .badge-status.sent {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    .badge-status.recovered {
+        background: #dcfce7;
+        color: #166534;
+    }
+    .badge-status.pending {
+        background: #fef3c7;
+        color: #b45309;
+    }
+    .btn-view {
+        background: var(--sky-blue);
+        color: white;
+        border: none;
+        border-radius: 2rem;
+        padding: 0.3rem 1rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .btn-view:hover {
+        background: var(--sky-blue-dark);
+    }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+    .pagination a,
+    .pagination span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        height: 40px;
+        padding: 0 0.5rem;
+        border-radius: 2rem;
+        background: white;
+        color: var(--text-dark);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s;
+        border: 1px solid var(--border-light);
+    }
+    .pagination a:hover {
+        background: var(--sky-blue-light);
+        border-color: var(--sky-blue);
+    }
+    .pagination .active {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+    }
+    .pagination .disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="abandoned-page">
+    <div class="page-header">
+        <h1><i class="fas fa-shopping-cart"></i> Abandoned Carts</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <form method="GET" action="{{ url_for('admin.abandoned_carts') }}" style="display: contents;">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" name="search" placeholder="Search by email or name..." value="{{ request.args.get('search', '') }}">
+                <button type="submit">Search</button>
+            </div>
+            <div class="filter-group">
+                <select name="status" onchange="this.form.submit()">
+                    <option value="">All statuses</option>
+                    <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>Pending (no email sent)</option>
+                    <option value="first_sent" {% if request.args.get('status') == 'first_sent' %}selected{% endif %}>First email sent</option>
+                    <option value="second_sent" {% if request.args.get('status') == 'second_sent' %}selected{% endif %}>Second email sent</option>
+                    <option value="recovered" {% if request.args.get('status') == 'recovered' %}selected{% endif %}>Recovered</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table Card -->
+    <div class="table-card">
+        <div class="table-header">
+            <span><i class="fas fa-list"></i> Abandoned Carts</span>
+            <span class="badge">{{ pagination.total }} total</span>
+        </div>
+        <div class="table-body">
+            {% if pagination.items %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cart ID</th>
+                            <th>User</th>
+                            <th>Created</th>
+                            <th>First Sent</th>
+                            <th>Second Sent</th>
+                            <th>Recovered</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ab in pagination.items %}
+                        <tr>
+                            <td>#{{ ab.id }}</td>
+                            <td>
+                                <a href="#" onclick="alert('Cart items view coming soon'); return false;" title="View cart items">{{ ab.cart_id }}</a>
+                            </td>
+                            <td>
+                                {% if ab.user %}
+                                    {{ ab.user.full_name or ab.user.username }}<br>
+                                    <small class="text-muted">{{ ab.user.email }}</small>
+                                {% else %}
+                                    Guest
+                                    {% if ab.session_id %}
+                                    <br><small class="text-muted">session: {{ ab.session_id[:8] }}...</small>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>{{ ab.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ ab.first_sent_at.strftime('%Y-%m-%d %H:%M') if ab.first_sent_at else '-' }}</td>
+                            <td>{{ ab.second_sent_at.strftime('%Y-%m-%d %H:%M') if ab.second_sent_at else '-' }}</td>
+                            <td>{{ ab.recovered_at.strftime('%Y-%m-%d %H:%M') if ab.recovered_at else '-' }}</td>
+                            <td>
+                                {% if ab.recovered_at %}
+                                    <span class="badge-status recovered">Recovered</span>
+                                {% elif ab.second_sent_at %}
+                                    <span class="badge-status sent">Second Sent</span>
+                                {% elif ab.first_sent_at %}
+                                    <span class="badge-status sent">First Sent</span>
+                                {% else %}
+                                    <span class="badge-status pending">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="#" class="btn-view" onclick="alert('Cart details coming soon'); return false;">
+                                    <i class="fas fa-eye"></i> View Cart
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-shopping-cart"></i>
+                <p>No abandoned carts found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination.pages > 1 %}
+    <div class="pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('admin.abandoned_carts', page=pagination.prev_num, **request.args) }}">←</a>
+        {% else %}
+        <span class="disabled">←</span>
+        {% endif %}
+
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if page_num == pagination.page %}
+                <span class="active">{{ page_num }}</span>
+                {% else %}
+                <a href="{{ url_for('admin.abandoned_carts', page=page_num, **request.args) }}">{{ page_num }}</a>
+                {% endif %}
+            {% else %}
+                <span>…</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+        <a href="{{ url_for('admin.abandoned_carts', page=pagination.next_num, **request.args) }}">→</a>
+        {% else %}
+        <span class="disabled">→</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

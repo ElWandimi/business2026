@@ -1,0 +1,47 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Promotions - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3" style="color: var(--junle-green);">Promotions</h1>
+        <a href="{{ url_for('admin.new_promotion') }}" class="btn" style="background-color: var(--sky-blue); color: #000;">
+            <i class="fas fa-plus"></i> New Promotion
+        </a>
+    </div>
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead style="background-color: var(--sky-blue-light);">
+                        <tr>
+                            <th>ID</th>
+                            <th>Subject</th>
+                            <th>Segment</th>
+                            <th>Recipients</th>
+                            <th>Sent At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for promo in promotions %}
+                        <tr>
+                            <td>{{ promo.id }}</td>
+                            <td>{{ promo.subject }}</td>
+                            <td>{{ promo.segment }}</td>
+                            <td>{{ promo.recipient_count }}</td>
+                            <td>{{ promo.sent_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <a href="#" class="btn-sm btn-outline" onclick="alert('Preview feature coming soon'); return false;">Preview</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us – WandimiMart{% endblock %}
+
+{% block extra_css %}
+<style>
+.contact-page {
+    max-width: 1280px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+/* Header */
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+.page-header p {
+    color: #64748b;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Contact cards */
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.contact-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    padding: 2rem;
+    text-align: center;
+    transition: var(--transition);
+}
+.contact-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.contact-icon {
+    width: 70px;
+    height: 70px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: white;
+    font-size: 2rem;
+}
+
+.contact-card h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--junle-green-dark);
+    margin-bottom: 0.75rem;
+}
+
+.contact-card p {
+    color: #334155;
+    line-height: 1.6;
+}
+.contact-card a {
+    color: var(--sky-blue-dark);
+    text-decoration: none;
+    transition: color var(--transition);
+}
+.contact-card a:hover {
+    color: var(--junle-green);
+    text-decoration: underline;
+}
+
+/* Contact form section */
+.form-section {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+.form-section h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--junle-green-dark);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+.form-group {
+    margin-bottom: 1.25rem;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: var(--junle-green-dark);
+    font-weight: 500;
+}
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: border-color var(--transition);
+}
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--sky-blue);
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
+}
+.btn-submit {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-block;
+    width: 100%;
+}
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--gradient-hover);
+}
+
+/* Map placeholder */
+.map-placeholder {
+    background: #e2e8f0;
+    border-radius: var(--radius-xl);
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-size: 1.2rem;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 2rem;
+}
+.map-placeholder i {
+    font-size: 3rem;
+    margin-right: 0.5rem;
+    color: var(--sky-blue);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-page">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>Get in Touch</h1>
+        <p>We'd love to hear from you. Whether you have a question about our products, need support, or just want to say hello – we're here for you.</p>
+    </div>
+
+    <!-- Contact Cards -->
+    <div class="contact-grid">
+        <!-- Email -->
+        <div class="contact-card">
+            <div class="contact-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <h3>Email Us</h3>
+            <p>
+                <a href="mailto:support@wandimimart.com">support@wandimimart.com</a><br>
+                <a href="mailto:sales@wandimimart.com">sales@wandimimart.com</a>
+            </p>
+            <p class="text-muted">We reply within 24 hours</p>
+        </div>
+
+        <!-- Phone -->
+        <div class="contact-card">
+            <div class="contact-icon">
+                <i class="fas fa-phone-alt"></i>
+            </div>
+            <h3>Call Us</h3>
+            <p>
+                <a href="tel:+254 719000999">+254 738000999</a><br>
+                <a href="tel:+254 719000999">+254 738000999</a>
+            </p>
+            <p class="text-muted">Mon–Fri, 8am–6pm</p>
+        </div>
+
+        <!-- Address -->
+        <div class="contact-card">
+            <div class="contact-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <h3>Visit Us</h3>
+            <p>
+                Mfangano Business Avenue<br>
+                Stall 100<br>
+                Nairobi CBD, KE 00200<br>
+                United States
+            </p>
+        </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="form-section">
+        <h2>Send Us a Message</h2>
+        <form method="POST" action="{{ url_for('main.contact') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Your Name *</label>
+                    <input type="text" id="name" name="name" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" placeholder="john@example.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="subject">Subject</label>
+                <input type="text" id="subject" name="subject" placeholder="How can we help?">
+            </div>
+
+            <div class="form-group">
+                <label for="message">Message *</label>
+                <textarea id="message" name="message" rows="5" placeholder="Write your message here..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-paper-plane"></i> Send Message
+            </button>
+        </form>
+    </div>
+
+    <!-- Map Placeholder (replace with actual map if desired) -->
+    <div class="map-placeholder">
+        <i class="fas fa-map"></i> Interactive Map Coming Soon
+    </div>
+</div>
+{% endblock %}

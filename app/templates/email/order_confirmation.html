@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #2E7D32, #4FC3F7);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .order-details {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .order-table th {
+            background: #2E7D32;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        .order-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .total-row {
+            font-weight: bold;
+            color: #2E7D32;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #2E7D32, #4FC3F7);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Thank You for Your Order!</h1>
+            <p>Order #{{ order.order_number }}</p>
+        </div>
+        
+        <div class="content">
+            <p>Dear {{ order.user.full_name }},</p>
+            
+            <p>Thank you for shopping with {{ site_name }}! Your order has been received and is being processed.</p>
+            
+            <div class="order-details">
+                <h3>Order Summary</h3>
+                
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items %}
+                        <tr>
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.total|currency }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 20px;">
+                    <p><strong>Subtotal:</strong> {{ order.subtotal|currency }}</p>
+                    <p><strong>Tax:</strong> {{ order.tax|currency }}</p>
+                    <p><strong>Shipping:</strong> Free</p>
+                    <p class="total-row"><strong>Total:</strong> {{ order.total|currency }}</p>
+                </div>
+            </div>
+            
+            <div class="order-details">
+                <h3>Shipping Information</h3>
+                <p>
+                    {{ order.shipping_first_name }} {{ order.shipping_last_name }}<br>
+                    {{ order.shipping_address }}<br>
+                    {{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_zip }}<br>
+                    {{ order.shipping_country }}<br>
+                    Phone: {{ order.shipping_phone }}
+                </p>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="{{ site_url }}/order/{{ order.id }}" class="button">View Order Details</a>
+            </div>
+            
+            <p>You will receive another email when your order ships.</p>
+            
+            <p>Thank you for choosing {{ site_name }}!</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2026 {{ site_name }}. All rights reserved.</p>
+            <p>This email was sent to {{ order.user.email }}</p>
+        </div>
+    </div>
+</body>
+</html>

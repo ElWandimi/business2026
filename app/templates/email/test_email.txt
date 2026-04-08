@@ -1,0 +1,6 @@
+Test Email
+
+{{ message }}
+
+Best regards,
+Business2026

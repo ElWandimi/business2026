@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Order {{ order.order_number }} – business2026{% endblock %}
+
+{% block extra_css %}
+<style>
+.order-detail-page {
+    max-width: 1280px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+.page-header {
+    margin-bottom: 2rem;
+}
+.page-header h1 {
+    font-size: 2.2rem;
+    font-weight: 600;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+.page-header h1 i {
+    font-size: 2.2rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.back-link {
+    margin-bottom: 1rem;
+    display: inline-block;
+    color: var(--sky-blue-dark);
+    text-decoration: none;
+}
+.back-link i {
+    margin-right: 0.3rem;
+}
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* Cards */
+.info-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+.card-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.card-header i {
+    font-size: 1.2rem;
+}
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Status badge */
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.status-badge.pending {
+    background: #fef9c3;
+    color: #854d0e;
+}
+.status-badge.processing {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.status-badge.shipped {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+.status-badge.delivered {
+    background: #dcfce7;
+    color: #166534;
+}
+.status-badge.cancelled {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Tracking section */
+.tracking-info {
+    background: #f0f9ff;
+    border-left: 4px solid var(--sky-blue);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-top: 1rem;
+}
+.tracking-number {
+    font-family: monospace;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--junle-green-dark);
+}
+.tracking-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    background: var(--sky-blue-light);
+    color: var(--sky-blue-dark);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+.tracking-link:hover {
+    background: var(--sky-blue);
+    color: white;
+}
+
+/* Summary row */
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    color: #475569;
+    font-size: 0.95rem;
+}
+.summary-row.total {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--junle-green-dark);
+    border-top: 2px solid #e2e8f0;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+/* Items table */
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.items-table th {
+    text-align: left;
+    padding: 0.75rem 0.5rem;
+    color: var(--junle-green-dark);
+    font-weight: 600;
+    border-bottom: 2px solid var(--sky-blue-light);
+}
+.items-table td {
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+.items-table tr:last-child td {
+    border-bottom: none;
+}
+.shipping-info p {
+    margin: 0.25rem 0;
+    color: #334155;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="order-detail-page">
+    <a href="{{ url_for('main.orders') }}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Orders</a>
+
+    <div class="page-header">
+        <h1><i class="fas fa-receipt"></i> Order {{ order.order_number }}</h1>
+    </div>
+
+    <!-- Order Status Card -->
+    <div class="info-card">
+        <div class="card-header">
+            <i class="fas fa-info-circle"></i> Order Status
+        </div>
+        <div class="card-body">
+            <p><strong>Status:</strong> <span class="status-badge {{ order.status }}">{{ order.status }}</span></p>
+            <p><strong>Payment Status:</strong> <span class="status-badge {{ order.payment_status }}">{{ order.payment_status }}</span></p>
+            <p><strong>Order Date:</strong> {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+
+            <!-- Tracking Information with carrier-specific links -->
+            {% if order.tracking_number %}
+            <div class="tracking-info">
+                <p><strong>Tracking Number:</strong></p>
+                <div class="tracking-number">{{ order.tracking_number }}</div>
+                {% if order.carrier %}
+                    {% if order.carrier == 'UPS' %}
+                        <a href="https://www.ups.com/track?tracknum={{ order.tracking_number }}" target="_blank" class="tracking-link">
+                            <i class="fas fa-truck"></i> Track with UPS
+                        </a>
+                    {% elif order.carrier == 'FedEx' %}
+                        <a href="https://www.fedex.com/fedextrack/?trknbr={{ order.tracking_number }}" target="_blank" class="tracking-link">
+                            <i class="fas fa-truck"></i> Track with FedEx
+                        </a>
+                    {% elif order.carrier == 'USPS' %}
+                        <a href="https://tools.usps.com/go/TrackConfirmAction?tLabels={{ order.tracking_number }}" target="_blank" class="tracking-link">
+                            <i class="fas fa-truck"></i> Track with USPS
+                        </a>
+                    {% elif order.carrier == 'DHL' %}
+                        <a href="https://www.dhl.com/en/express/tracking.html?AWB={{ order.tracking_number }}" target="_blank" class="tracking-link">
+                            <i class="fas fa-truck"></i> Track with DHL
+                        </a>
+                    {% else %}
+                        <a href="https://www.google.com/search?q={{ order.tracking_number }}" target="_blank" class="tracking-link">
+                            <i class="fas fa-search"></i> Track Package
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="https://www.google.com/search?q={{ order.tracking_number }}" target="_blank" class="tracking-link">
+                        <i class="fas fa-search"></i> Track Package
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Items Card -->
+    <div class="info-card">
+        <div class="card-header">
+            <i class="fas fa-box"></i> Items
+        </div>
+        <div class="card-body">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>SKU</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items %}
+                    <tr>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.variant_sku or 'N/A' }}</td>
+                        <td>{{ item.price|currency }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.total|currency }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Shipping Information Card -->
+    <div class="info-card">
+        <div class="card-header">
+            <i class="fas fa-truck"></i> Shipping Information
+        </div>
+        <div class="card-body shipping-info">
+            <p>{{ order.shipping_first_name }} {{ order.shipping_last_name }}</p>
+            <p>{{ order.shipping_address }}</p>
+            <p>{{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_zip }}</p>
+            <p>{{ order.shipping_country }}</p>
+            <p>Email: {{ order.user.email if order.user else order.shipping_email }}</p>
+            <p>Phone: {{ order.shipping_phone }}</p>
+        </div>
+    </div>
+
+    <!-- Order Summary Card -->
+    <div class="info-card">
+        <div class="card-header">
+            <i class="fas fa-calculator"></i> Order Summary
+        </div>
+        <div class="card-body">
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>{{ order.subtotal|currency }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Tax</span>
+                <span>{{ order.tax|currency }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Shipping</span>
+                <span>{{ order.shipping_cost|currency }}</span>
+            </div>
+            {% if order.discount_amount > 0 %}
+            <div class="summary-row">
+                <span>Discount</span>
+                <span>-{{ order.discount_amount|currency }}</span>
+            </div>
+            {% endif %}
+            <div class="summary-row total">
+                <span>Total</span>
+                <span>{{ order.total|currency }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

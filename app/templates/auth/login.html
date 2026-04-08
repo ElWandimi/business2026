@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Login – business2026{% endblock %}
+
+{% block extra_css %}
+<style>
+.login-page {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+}
+
+.login-card {
+    max-width: 420px;
+    width: 100%;
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: fadeSlideUp 0.5s ease;
+}
+
+.login-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 2rem 2rem 1.5rem;
+    text-align: center;
+}
+
+.login-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.login-header p {
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.login-body {
+    padding: 2rem;
+}
+
+/* Demo credentials (optional) */
+.demo-credentials {
+    background: #f1f5f9;
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #334155;
+    border-left: 4px solid var(--sky-blue);
+}
+.demo-credentials strong {
+    color: var(--junle-green);
+}
+
+/* Form */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--junle-green-dark);
+    font-weight: 500;
+}
+.form-label i {
+    color: var(--sky-blue);
+    margin-right: 0.3rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: border-color var(--transition);
+}
+.form-control:focus {
+    outline: none;
+    border-color: var(--sky-blue);
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+.form-check-input {
+    width: 1.2rem;
+    height: 1.2rem;
+    accent-color: var(--junle-green);
+}
+.form-check-label {
+    color: #475569;
+}
+
+.forgot-link {
+    text-align: right;
+    margin-top: 0.5rem;
+}
+.forgot-link a {
+    color: var(--sky-blue-dark);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color var(--transition);
+}
+.forgot-link a:hover {
+    color: var(--junle-green);
+    text-decoration: underline;
+}
+
+/* Button */
+.btn-login {
+    width: 100%;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 0.9rem;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 1.5rem;
+}
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--gradient-hover);
+}
+
+/* Register link */
+.register-link {
+    text-align: center;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1.5rem;
+    margin-top: 0.5rem;
+}
+.register-link p {
+    color: #64748b;
+    margin-bottom: 0.25rem;
+}
+.register-link a {
+    color: var(--junle-green);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color var(--transition);
+}
+.register-link a:hover {
+    color: var(--sky-blue);
+}
+
+/* Animation */
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>Welcome Back</h1>
+            <p>Sign in to your account</p>
+        </div>
+        <div class="login-body">
+            <!-- Optional demo credentials (remove in production) -->
+            <div class="demo-credentials">
+                <strong>Demo:</strong> admin / admin123
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <input type="text" name="username" class="form-control" placeholder="Enter your username" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-check">
+                    <input type="checkbox" name="remember" class="form-check-input" id="remember">
+                    <label class="form-check-label" for="remember">Remember me</label>
+                </div>
+
+                <div class="forgot-link">
+                    <a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </form>
+
+            <div class="register-link">
+                <p>Don't have an account?</p>
+                <a href="{{ url_for('auth.register') }}">Create an account</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

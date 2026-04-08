@@ -1,0 +1,376 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Gift Cards - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .gift-cards-page {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .page-header h1 {
+        font-size: 2.2rem;
+        font-weight: 600;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+    }
+    .btn-add {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: var(--shadow-sm);
+        text-decoration: none;
+    }
+    .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        background: var(--gradient-hover);
+    }
+    .filter-bar {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow-md);
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        border: 1px solid var(--border-light);
+    }
+    .search-box {
+        flex: 1;
+        min-width: 250px;
+        display: flex;
+        align-items: center;
+        background: var(--bg-light);
+        border-radius: 2rem;
+        padding: 0.3rem 0.3rem 0.3rem 1rem;
+        border: 1px solid var(--border-light);
+    }
+    .search-box i {
+        color: var(--text-muted);
+        margin-right: 0.5rem;
+    }
+    .search-box input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 0.6rem 0;
+        font-size: 1rem;
+        outline: none;
+    }
+    .search-box button {
+        background: var(--sky-blue);
+        border: none;
+        border-radius: 2rem;
+        padding: 0.6rem 1.5rem;
+        color: white;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .search-box button:hover {
+        background: var(--sky-blue-dark);
+    }
+    .filter-group select {
+        padding: 0.5rem 1.5rem 0.5rem 1rem;
+        border: 1px solid var(--border-light);
+        border-radius: 2rem;
+        background: white;
+        font-size: 0.95rem;
+        cursor: pointer;
+        outline: none;
+    }
+    .table-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        border: 1px solid var(--border-light);
+    }
+    .table-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .table-header i {
+        margin-right: 0.5rem;
+    }
+    .table-header .badge {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        font-size: 0.9rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 2rem;
+    }
+    .table-body {
+        padding: 1.5rem;
+        overflow-x: auto;
+    }
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .table th {
+        text-align: left;
+        padding: 1rem 0.75rem;
+        color: var(--junle-green-dark);
+        font-weight: 600;
+        border-bottom: 2px solid var(--sky-blue-light);
+        white-space: nowrap;
+    }
+    .table td {
+        padding: 1rem 0.75rem;
+        border-bottom: 1px solid var(--border-light);
+        vertical-align: middle;
+    }
+    .table tr:last-child td {
+        border-bottom: none;
+    }
+    .table tbody tr:hover {
+        background: var(--bg-light);
+    }
+    .badge-active {
+        background: #dcfce7;
+        color: #166534;
+        padding: 0.25rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .badge-inactive {
+        background: #fee2e2;
+        color: #b91c1c;
+        padding: 0.25rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .btn-toggle {
+        background: #fef9c3;
+        color: #854d0e;
+        border: none;
+        border-radius: 2rem;
+        padding: 0.3rem 1rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-toggle:hover {
+        background: #fde047;
+    }
+    .btn-view {
+        background: var(--sky-blue);
+        color: white;
+        border: none;
+        border-radius: 2rem;
+        padding: 0.3rem 1rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .btn-view:hover {
+        background: var(--sky-blue-dark);
+    }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+    .pagination a,
+    .pagination span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        height: 40px;
+        padding: 0 0.5rem;
+        border-radius: 2rem;
+        background: white;
+        color: var(--text-dark);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s;
+        border: 1px solid var(--border-light);
+    }
+    .pagination a:hover {
+        background: var(--sky-blue-light);
+        border-color: var(--sky-blue);
+    }
+    .pagination .active {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+    }
+    .pagination .disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gift-cards-page">
+    <div class="page-header">
+        <h1><i class="fas fa-gift"></i> Gift Cards</h1>
+        <a href="{{ url_for('admin.add_gift_card') }}" class="btn-add">
+            <i class="fas fa-plus-circle"></i> Add Gift Card
+        </a>
+    </div>
+
+    <div class="filter-bar">
+        <form method="GET" action="{{ url_for('admin.gift_cards') }}" style="display: contents;">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" name="search" placeholder="Search by code or email..." value="{{ request.args.get('search', '') }}">
+                <button type="submit">Search</button>
+            </div>
+            <div class="filter-group">
+                <select name="status" onchange="this.form.submit()">
+                    <option value="">All statuses</option>
+                    <option value="active" {% if request.args.get('status') == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if request.args.get('status') == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-card">
+        <div class="table-header">
+            <span><i class="fas fa-list"></i> All Gift Cards</span>
+            <span class="badge">{{ pagination.total }} total</span>
+        </div>
+        <div class="table-body">
+            {% if pagination.items %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Code</th>
+                            <th>Balance</th>
+                            <th>Recipient Email</th>
+                            <th>Purchased At</th>
+                            <th>Expires</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gc in pagination.items %}
+                        <tr>
+                            <td>#{{ gc.id }}</td>
+                            <td><code>{{ gc.code }}</code></td>
+                            <td>${{ "%.2f"|format(gc.current_balance) }} / ${{ "%.2f"|format(gc.initial_balance) }}</td>
+                            <td>{{ gc.recipient_email or '—' }}</td>
+                            <td>{{ gc.purchased_at.strftime('%Y-%m-%d') if gc.purchased_at else '—' }}</td>
+                            <td>{{ gc.expires_at.strftime('%Y-%m-%d') if gc.expires_at else 'Never' }}</td>
+                            <td>
+                                {% if gc.is_active %}
+                                    <span class="badge-active"><i class="fas fa-check-circle"></i> Active</span>
+                                {% else %}
+                                    <span class="badge-inactive"><i class="fas fa-times-circle"></i> Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn-toggle" onclick="toggleGiftCard({{ gc.id }})">
+                                    <i class="fas fa-sync-alt"></i> Toggle
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-gift"></i>
+                <p>No gift cards found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <div class="pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('admin.gift_cards', page=pagination.prev_num, **request.args) }}">←</a>
+        {% else %}
+        <span class="disabled">←</span>
+        {% endif %}
+
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if page_num == pagination.page %}
+                <span class="active">{{ page_num }}</span>
+                {% else %}
+                <a href="{{ url_for('admin.gift_cards', page=page_num, **request.args) }}">{{ page_num }}</a>
+                {% endif %}
+            {% else %}
+                <span>…</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+        <a href="{{ url_for('admin.gift_cards', page=pagination.next_num, **request.args) }}">→</a>
+        {% else %}
+        <span class="disabled">→</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleGiftCard(id) {
+    if (!confirm('Toggle gift card active status?')) return;
+    fetch(`/admin/gift-card/${id}/toggle`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) location.reload();
+        else alert('Error toggling gift card');
+    })
+    .catch(err => alert('Network error'));
+}
+</script>
+{% endblock %}

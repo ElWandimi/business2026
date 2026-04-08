@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - Business2026{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4" style="color: #2d6a4f;">Checkout</h1>
+    
+    <div class="row">
+        <div class="col-lg-7">
+            <!-- Shipping Form -->
+            <div class="card shadow-sm mb-4" style="border-color: #a3d8f0;">
+                <div class="card-header" style="background-color: #d4f0d4; color: #2d6a4f;">
+                    <i class="fas fa-truck"></i> Shipping Information
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('checkout.process') }}" id="checkout-form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="shipping_first_name" class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="shipping_first_name" name="shipping_first_name" required style="border-color: #a3d8f0;">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="shipping_last_name" class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" id="shipping_last_name" name="shipping_last_name" required style="border-color: #a3d8f0;">
+                            </div>
+                            <div class="col-12">
+                                <label for="shipping_address" class="form-label">Address *</label>
+                                <input type="text" class="form-control" id="shipping_address" name="shipping_address" required style="border-color: #a3d8f0;">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="shipping_city" class="form-label">City *</label>
+                                <input type="text" class="form-control" id="shipping_city" name="shipping_city" required style="border-color: #a3d8f0;">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="shipping_state" class="form-label">State / Province</label>
+                                <input type="text" class="form-control" id="shipping_state" name="shipping_state" style="border-color: #a3d8f0;">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="shipping_zip" class="form-label">ZIP / Postal Code *</label>
+                                <input type="text" class="form-control" id="shipping_zip" name="shipping_zip" required style="border-color: #a3d8f0;">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="shipping_country" class="form-label">Country *</label>
+                                <select class="form-select" id="shipping_country" name="shipping_country" required style="border-color: #a3d8f0;">
+                                    <option value="">Select...</option>
+                                    <option value="US">United States</option>
+                                    <option value="CA">Canada</option>
+                                    <!-- Add more countries -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="shipping_phone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="shipping_phone" name="shipping_phone" style="border-color: #a3d8f0;">
+                            </div>
+                        </div>
+                        <hr class="my-4">
+                        <button type="submit" class="btn btn-lg w-100" style="background-color: #a3d8f0; color: #000;">
+                            Place Order
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-5">
+            <!-- Order Summary -->
+            <div class="card shadow-sm" style="border-color: #a3d8f0;">
+                <div class="card-header" style="background-color: #d4f0d4; color: #2d6a4f;">
+                    <i class="fas fa-receipt"></i> Order Summary
+                </div>
+                <div class="card-body">
+                    {% for item in cart_items %}
+                    <div class="d-flex mb-3">
+                        <img src="{{ item.variant.image_url or item.variant.product.primary_image }}" alt="{{ item.variant.product.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #d4f0d4;" class="me-3">
+                        <div class="flex-grow-1">
+                            <h6 style="color: #2d6a4f;">{{ item.variant.product.name }}</h6>
+                            <small class="text-muted">
+                                {% if item.variant.size %}Size: {{ item.variant.size }}<br>{% endif %}
+                                {% if item.variant.color %}Color: {{ item.variant.color }}{% endif %}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-bold">{{ (item.variant.product.base_price + item.variant.price_adjustment)|currency }}</span><br>
+                            <small>Qty: {{ item.quantity }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span>Subtotal:</span>
+                        <span class="fw-bold">{{ subtotal|currency }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Tax (10%):</span>
+                        <span class="fw-bold">{{ tax|currency }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between h5">
+                        <span style="color: #2d6a4f;">Total:</span>
+                        <span style="color: #2d6a4f;">{{ total|currency }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

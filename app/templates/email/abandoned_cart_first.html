@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #2E7D32, #4FC3F7); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .button { display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #2E7D32, #4FC3F7); color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 0.9em; }
+        .item-list { margin: 20px 0; }
+        .item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #ddd; }
+        .item img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; margin-right: 15px; }
+        .item-details { flex: 1; }
+        .item-name { font-weight: bold; }
+        .item-price { color: #2E7D32; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>You left something behind!</h1>
+        </div>
+        <div class="content">
+            <p>Hi {{ user.full_name if user else 'there' }},</p>
+            <p>We noticed you added some items to your cart but didn't complete your purchase. They're waiting for you!</p>
+
+            <div class="item-list">
+                {% for item in cart_items %}
+                <div class="item">
+                    <img src="{{ item.variant.image_url or item.variant.product.primary_image }}" alt="{{ item.variant.product.name }}">
+                    <div class="item-details">
+                        <div class="item-name">{{ item.variant.product.name }}</div>
+                        {% if item.variant.size or item.variant.color %}
+                        <div class="item-variant">
+                            {% if item.variant.size %}Size: {{ item.variant.size }}{% endif %}
+                            {% if item.variant.color %} | Color: {{ item.variant.color }}{% endif %}
+                        </div>
+                        {% endif %}
+                        <div class="item-price">{{ item.price|currency }} x {{ item.quantity }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <p style="text-align: center;">
+                <a href="{{ cart_url }}" class="button">Complete Your Purchase</a>
+            </p>
+
+            <p>If you have any questions, just reply to this email.</p>
+            <p>Happy shopping!</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 {{ site_name }}. All rights reserved.</p>
+            <p><a href="{{ unsubscribe_url }}">Unsubscribe from cart reminders</a></p>
+        </div>
+    </div>
+</body>
+</html>

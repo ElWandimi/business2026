@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.order_number }} - Business2026{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 style="color: #2d6a4f;">Order #{{ order.order_number }}</h1>
+        <a href="{{ url_for('auth.order_history') }}" class="btn btn-outline-secondary">Back to Orders</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4" style="border-color: #a3d8f0;">
+                <div class="card-header" style="background-color: #d4f0d4; color: #2d6a4f;">
+                    <i class="fas fa-boxes"></i> Order Items
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Variant</th>
+                                    <th>Price</th>
+                                    <th>Qty</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>
+                                        <img src="{{ item.image_url or url_for('static', filename='images/no-image.png') }}" alt="{{ item.product_name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" class="me-2">
+                                        {{ item.product_name }}
+                                    </td>
+                                    <td>
+                                        {% if item.variant_size or item.variant_color %}
+                                            {{ item.variant_size or '' }} {{ item.variant_color or '' }}
+                                            {% if item.variant_color_code %}
+                                                <span style="display:inline-block; width:16px; height:16px; background-color:{{ item.variant_color_code }}; border-radius:4px;"></span>
+                                            {% endif %}
+                                        {% else %}
+                                            Default
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.price|currency }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ (item.price * item.quantity)|currency }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4" style="border-color: #a3d8f0;">
+                <div class="card-header" style="background-color: #d4f0d4; color: #2d6a4f;">
+                    <i class="fas fa-receipt"></i> Order Summary
+                </div>
+                <div class="card-body">
+                    <p><strong>Order Date:</strong> {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge {% if order.status == 'delivered' %}bg-success{% elif order.status == 'cancelled' %}bg-danger{% else %}bg-warning{% endif %}">
+                            {{ order.status|capitalize }}
+                        </span>
+                    </p>
+                    <p><strong>Payment Status:</strong> {{ order.payment_status|capitalize }}</p>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span>Subtotal:</span>
+                        <span>{{ order.subtotal|currency }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Tax:</span>
+                        <span>{{ order.tax|currency }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Shipping:</span>
+                        <span>{{ order.shipping_cost|currency }}</span>
+                    </div>
+                    {% if order.discount_amount and order.discount_amount > 0 %}
+                    <div class="d-flex justify-content-between text-success">
+                        <span>Discount:</span>
+                        <span>-{{ order.discount_amount|currency }}</span>
+                    </div>
+                    {% endif %}
+                    <hr>
+                    <div class="d-flex justify-content-between h5">
+                        <span>Total:</span>
+                        <span style="color: #2d6a4f;">{{ order.total|currency }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if order.shipping_address %}
+            <div class="card shadow-sm" style="border-color: #a3d8f0;">
+                <div class="card-header" style="background-color: #d4f0d4; color: #2d6a4f;">
+                    <i class="fas fa-truck"></i> Shipping Address
+                </div>
+                <div class="card-body">
+                    <p>{{ order.shipping_first_name }} {{ order.shipping_last_name }}</p>
+                    <p>{{ order.shipping_address }}</p>
+                    <p>{{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_zip }}</p>
+                    <p>{{ order.shipping_country }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

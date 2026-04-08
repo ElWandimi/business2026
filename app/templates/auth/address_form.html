@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Business2026{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 600px;">
+    <h1 class="mb-4" style="color: var(--junle-green);">{{ title }}</h1>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="mb-3">
+                    <label class="form-label">Address Type</label>
+                    {{ form.address_type(class="form-select") }}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">First Name</label>
+                        {{ form.first_name(class="form-control") }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Last Name</label>
+                        {{ form.last_name(class="form-control") }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Company</label>
+                    {{ form.company(class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Address Line 1</label>
+                    {{ form.address_line1(class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Address Line 2</label>
+                    {{ form.address_line2(class="form-control") }}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">City</label>
+                        {{ form.city(class="form-control") }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">State/Province</label>
+                        {{ form.state(class="form-control") }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Postal Code</label>
+                        {{ form.postal_code(class="form-control") }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Country</label>
+                        {{ form.country(class="form-control") }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    {{ form.phone(class="form-control") }}
+                </div>
+                <div class="mb-3 form-check">
+                    {{ form.is_default(class="form-check-input") }}
+                    <label class="form-check-label">Set as default address</label>
+                </div>
+                <button type="submit" class="btn" style="background-color: var(--sky-blue); color: #000;">Save Address</button>
+                <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

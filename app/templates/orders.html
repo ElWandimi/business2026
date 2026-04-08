@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders – business2026{% endblock %}
+
+{% block extra_css %}
+<style>
+.orders-page {
+    max-width: 1280px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.page-header {
+    margin-bottom: 2.5rem;
+}
+.page-header h1 {
+    font-size: 2.2rem;
+    font-weight: 600;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+.page-header h1 i {
+    font-size: 2.2rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.order-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+}
+.order-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.order-number {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--junle-green-dark);
+}
+.order-number a {
+    color: var(--sky-blue-dark);
+    text-decoration: none;
+}
+.order-number a:hover {
+    text-decoration: underline;
+}
+.order-date {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+.order-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.order-total {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--junle-green);
+}
+.order-status {
+    display: inline-block;
+    padding: 0.3rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.order-status.pending {
+    background: #fef9c3;
+    color: #854d0e;
+}
+.order-status.processing {
+    background: #dbeafe;
+    color: #1e40af;
+}
+.order-status.shipped {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+.order-status.delivered {
+    background: #dcfce7;
+    color: #166534;
+}
+.order-status.cancelled {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+.order-items-preview {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+}
+.order-items-preview i {
+    color: var(--sky-blue);
+    margin-right: 0.3rem;
+}
+
+.empty-orders {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+}
+.empty-orders i {
+    font-size: 5rem;
+    color: #cbd5e1;
+    margin-bottom: 1.5rem;
+}
+.empty-orders h2 {
+    color: var(--junle-green-dark);
+    margin-bottom: 0.5rem;
+}
+.empty-orders p {
+    color: #64748b;
+    margin-bottom: 2rem;
+}
+.btn-primary {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: var(--transition);
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--gradient-hover);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="orders-page">
+    <div class="page-header">
+        <h1><i class="fas fa-box"></i> My Orders</h1>
+    </div>
+
+    {% if orders %}
+        {% for order in orders %}
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-number">
+                    <a href="{{ url_for('auth.order_detail', order_id=order.id) }}">{{ order.order_number }}</a>
+                </div>
+                <div class="order-date">{{ order.created_at.strftime('%B %d, %Y') }}</div>
+            </div>
+            <div class="order-details">
+                <div class="order-total">{{ order.total|currency }}</div>
+                <div>
+                    <span class="order-status {{ order.status }}">{{ order.status }}</span>
+                </div>
+            </div>
+            <div class="order-items-preview">
+                <i class="fas fa-cube"></i> {{ order.items|length }} item(s)
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="empty-orders">
+        <i class="fas fa-box-open"></i>
+        <h2>No orders yet</h2>
+        <p>Looks like you haven't placed any orders.</p>
+        <a href="{{ url_for('main.products') }}" class="btn-primary">Start Shopping</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

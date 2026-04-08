@@ -1,0 +1,570 @@
+{% extends "base.html" %}
+
+{% block title %}All Products - Business2026{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== Enhanced Products Page ===== */
+:root {
+    --junle-green: #2d6a4f;
+    --junle-green-light: #d4f0d4;
+    --sky-blue: #a3d8f0;
+    --sky-blue-dark: #6bb5d9;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --bg-light: #f8fafc;
+    --border-light: #e2e8f0;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    --shadow-hover: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    --transition: all 0.2s ease;
+}
+
+.products-page {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+}
+
+/* Page header */
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+.page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--junle-green);
+    margin-bottom: 0.5rem;
+}
+.page-header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+/* Filter bar – modernized */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    padding: 1.25rem 1.5rem;
+    background: white;
+    border-radius: 3rem;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-light);
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+}
+.search-box {
+    flex: 1 1 300px;
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 3rem;
+    padding: 0.2rem 0.2rem 0.2rem 1.5rem;
+    border: 1px solid var(--border-light);
+    box-shadow: inset var(--shadow-sm);
+}
+.search-box i {
+    color: var(--text-muted);
+    margin-right: 0.5rem;
+}
+.search-box input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.8rem 0;
+    font-size: 1rem;
+    outline: none;
+}
+.search-box button {
+    background: var(--sky-blue);
+    border: none;
+    border-radius: 3rem;
+    padding: 0.8rem 2rem;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.search-box button:hover {
+    background: var(--sky-blue-dark);
+    transform: scale(1.02);
+}
+.filter-group {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+.filter-group select {
+    padding: 0.7rem 2rem 0.7rem 1rem;
+    border: 1px solid var(--border-light);
+    border-radius: 3rem;
+    background: white;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232d6a4f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+}
+.filter-group select:focus {
+    border-color: var(--sky-blue);
+    box-shadow: 0 0 0 3px rgba(163, 216, 240, 0.2);
+}
+.filter-group .category-filter {
+    background: var(--junle-green-light);
+    color: var(--junle-green);
+    border-color: var(--junle-green-light);
+}
+
+/* Product grid – refined */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+@media (max-width: 1200px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (max-width: 900px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Premium product card */
+.product-card {
+    background: white;
+    border-radius: 2rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--border-light);
+    position: relative;
+}
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
+}
+.product-image {
+    position: relative;
+    padding-top: 100%;
+    overflow: hidden;
+    background: var(--bg-light);
+}
+.product-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+.product-card:hover .product-image img {
+    transform: scale(1.08);
+}
+/* Quick view overlay (optional) */
+.quick-view {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--junle-green);
+    opacity: 0;
+    transition: opacity 0.2s;
+    cursor: pointer;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+}
+.product-card:hover .quick-view {
+    opacity: 1;
+}
+.product-info {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.product-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--junle-green-dark);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+.product-description {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    flex: 1;
+}
+.product-price-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+.product-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--junle-green);
+}
+.product-stock {
+    font-size: 0.9rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 2rem;
+    background: var(--junle-green-light);
+    color: var(--junle-green);
+    font-weight: 600;
+}
+.product-stock.out-of-stock {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+.product-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1rem;
+}
+.btn-add-cart {
+    flex: 2;
+    background: var(--sky-blue);
+    color: white;
+    border: none;
+    border-radius: 3rem;
+    padding: 0.8rem 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: var(--shadow-sm);
+}
+.btn-add-cart:hover {
+    background: var(--sky-blue-dark);
+    transform: scale(1.02);
+}
+.btn-add-cart:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+.btn-view {
+    flex: 1;
+    background: white;
+    color: var(--junle-green);
+    border: 1px solid var(--junle-green);
+    border-radius: 3rem;
+    padding: 0.8rem 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+}
+.btn-view:hover {
+    background: var(--junle-green-light);
+}
+
+/* Loading skeletons – updated to match new card style */
+.skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+@media (max-width: 1200px) {
+    .skeleton-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (max-width: 900px) {
+    .skeleton-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .skeleton-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.skeleton-card {
+    background: white;
+    border-radius: 2rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-light);
+}
+.skeleton-image {
+    width: 100%;
+    padding-top: 100%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 1.5rem;
+    margin-bottom: 1rem;
+}
+.skeleton-line {
+    height: 1rem;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 0.5rem;
+    margin-bottom: 0.8rem;
+}
+.skeleton-line.short {
+    width: 60%;
+}
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Empty state – refined */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 2rem;
+    box-shadow: var(--shadow-lg);
+}
+.empty-state i {
+    font-size: 4rem;
+    color: var(--sky-blue);
+    margin-bottom: 1rem;
+}
+.empty-state h3 {
+    font-size: 1.5rem;
+    color: var(--junle-green);
+    margin-bottom: 0.5rem;
+}
+.empty-state p {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+.empty-state .btn {
+    background: var(--sky-blue);
+    color: white;
+    border: none;
+    border-radius: 3rem;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    display: inline-block;
+}
+.empty-state .btn:hover {
+    background: var(--sky-blue-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Pagination – improved */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+.pagination .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.8rem;
+    background: white;
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: var(--transition);
+    border: 1px solid var(--border-light);
+    font-weight: 500;
+}
+.pagination .page-link:hover {
+    background: var(--junle-green-light);
+    border-color: var(--junle-green);
+}
+.pagination .page-link.active {
+    background: var(--sky-blue);
+    color: white;
+    border-color: var(--sky-blue);
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="products-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>All Products</h1>
+        <p>Discover our curated collection of premium items</p>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="filter-bar">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search products..." value="{{ request.args.get('q', '') }}">
+            <button type="button" id="searchBtn"><i class="fas fa-arrow-right"></i></button>
+        </div>
+        <div class="filter-group">
+            <select id="categoryFilter" class="category-filter">
+                <option value="">All Categories</option>
+                {% for category in categories|default([]) %}
+                <option value="{{ category.slug }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+            <select id="sortSelect">
+                <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+                <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Name</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Product Grid -->
+    {% if products %}
+    <div class="product-grid" id="productGrid">
+        {% for product in products %}
+        <div class="product-card">
+            <div class="product-image">
+                <img src="{{ product.primary_image if product.primary_image.startswith('http') else url_for('main.uploaded_file', filename=product.primary_image.replace('/uploads/', '')) }}"
+                     alt="{{ product.name }}"
+                     onerror="this.src='{{ url_for('static', filename='images/no-image.png') }}'">
+                <div class="quick-view" onclick="window.location='{{ url_for('main.product_detail', slug=product.slug) }}'">
+                    <i class="fas fa-eye"></i>
+                </div>
+            </div>
+            <div class="product-info">
+                <h3 class="product-name">{{ product.name }}</h3>
+                <p class="product-description">{{ product.short_description|default(product.description|truncate(80)) }}</p>
+                <div class="product-price-row">
+                    <span class="product-price">{{ product.current_price|currency }}</span>
+                    {% if product.in_stock %}
+                        <span class="product-stock">In Stock</span>
+                    {% else %}
+                        <span class="product-stock out-of-stock">Out of Stock</span>
+                    {% endif %}
+                </div>
+                <div class="product-actions">
+                    {% if product.in_stock %}
+                    <button class="btn-add-cart" onclick="addToCart({{ product.id }})">
+                        <i class="fas fa-cart-plus"></i> Add
+                    </button>
+                    {% else %}
+                    <button class="btn-add-cart" disabled>
+                        <i class="fas fa-cart-plus"></i> Add
+                    </button>
+                    {% endif %}
+                    <a href="{{ url_for('main.product_detail', slug=product.slug) }}" class="btn-view">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <i class="fas fa-box-open"></i>
+        <h3>No products found</h3>
+        <p>Try adjusting your search or filter to find what you're looking for.</p>
+        <a href="{{ url_for('main.products') }}" class="btn">Clear Filters</a>
+    </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if pagination and pagination.pages > 1 %}
+    <nav class="pagination">
+        {% if pagination.has_prev %}
+        <a class="page-link" href="{{ url_for('main.products', page=pagination.prev_num, sort=sort, q=request.args.get('q', '')) }}"><i class="fas fa-chevron-left"></i></a>
+        {% endif %}
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if page_num == pagination.page %}
+                <span class="page-link active">{{ page_num }}</span>
+                {% else %}
+                <a class="page-link" href="{{ url_for('main.products', page=page_num, sort=sort, q=request.args.get('q', '')) }}">{{ page_num }}</a>
+                {% endif %}
+            {% else %}
+                <span class="page-link">...</span>
+            {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+        <a class="page-link" href="{{ url_for('main.products', page=pagination.next_num, sort=sort, q=request.args.get('q', '')) }}"><i class="fas fa-chevron-right"></i></a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// Add to cart function (placeholder – replace with actual AJAX)
+function addToCart(productId) {
+    // You can replace with your actual add-to-cart logic
+    alert('Product ' + productId + ' added to cart! (Demo)');
+}
+
+// Handle search and filter (client-side for demo, but should be server-side)
+document.addEventListener('DOMContentLoaded', function() {
+    const searchBtn = document.getElementById('searchBtn');
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+    const categoryFilter = document.getElementById('categoryFilter');
+
+    function applyFilters() {
+        const params = new URLSearchParams(window.location.search);
+        if (searchInput.value) params.set('q', searchInput.value);
+        else params.delete('q');
+        if (sortSelect.value) params.set('sort', sortSelect.value);
+        else params.delete('sort');
+        if (categoryFilter.value) params.set('category', categoryFilter.value);
+        else params.delete('category');
+        params.set('page', '1'); // reset to first page
+        window.location.search = params.toString();
+    }
+
+    searchBtn.addEventListener('click', applyFilters);
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') applyFilters();
+    });
+    sortSelect.addEventListener('change', applyFilters);
+    categoryFilter.addEventListener('change', applyFilters);
+});
+</script>
+{% endblock %}

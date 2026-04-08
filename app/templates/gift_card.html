@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Buy Gift Card - WandimiMart{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin-top: 50px;">
+    <h1 class="text-center mb-4" style="color: var(--junle-green);">Buy a Gift Card</h1>
+    <p class="text-center text-muted">Perfect for friends and family. They can use it on any purchase!</p>
+    <form method="POST" class="card shadow-sm p-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount ($) *</label>
+            <input type="number" step="5" min="5" class="form-control" id="amount" name="amount" required>
+            <small class="text-muted">Minimum $5, increments of $5.</small>
+        </div>
+        <div class="mb-3">
+            <label for="recipient_email" class="form-label">Recipient Email (optional)</label>
+            <input type="email" class="form-control" id="recipient_email" name="recipient_email" 
+                   placeholder="We'll send the code to this email">
+        </div>
+        <button type="submit" class="btn btn-lg w-100" style="background-color: var(--sky-blue); color: #000;">
+            Purchase Gift Card
+        </button>
+    </form>
+    <div class="text-center mt-3">
+        <a href="{{ url_for('main.products') }}">← Continue Shopping</a>
+    </div>
+</div>
+{% endblock %}

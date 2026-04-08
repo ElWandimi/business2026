@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %} - Business2026</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+        :root {
+            --junle-green: #2d6a4f;
+            --junle-green-light: #d4f0d4;
+            --junle-green-dark: #1b4b3a;
+            --sky-blue: #a3d8f0;
+            --sky-blue-dark: #6bb5d9;
+            --sky-blue-light: #e1f0fa;
+            --bg-light: #f8fafc;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 70px;
+            --header-height: 70px;
+            --transition: all 0.2s ease;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: white;
+            border-right: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            transition: width 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-light);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sidebar-header h3 {
+            color: var(--junle-green);
+            font-weight: 700;
+            margin: 0;
+            font-size: 1.25rem;
+            transition: opacity 0.2s;
+        }
+        .sidebar.collapsed .sidebar-header h3 {
+            opacity: 0;
+            width: 0;
+        }
+        .sidebar-header .toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+        .sidebar-header .toggle-btn:hover {
+            color: var(--junle-green);
+        }
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+        .sidebar-menu .menu-section {
+            margin-bottom: 1.5rem;
+        }
+        .sidebar-menu .menu-section-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .sidebar.collapsed .menu-section-title {
+            display: none;
+        }
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            white-space: nowrap;
+        }
+        .sidebar-menu a i {
+            width: 20px;
+            color: var(--sky-blue-dark);
+            font-size: 1.1rem;
+        }
+        .sidebar-menu a:hover {
+            background: var(--junle-green-light);
+            border-left-color: var(--junle-green);
+        }
+        .sidebar-menu a.active {
+            background: var(--sky-blue);
+            border-left-color: var(--junle-green);
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        .sidebar-menu a.active i {
+            color: var(--junle-green);
+        }
+        .sidebar.collapsed a span {
+            display: none;
+        }
+        .sidebar.collapsed a {
+            justify-content: center;
+            padding: 0.75rem 0;
+        }
+        .sidebar.collapsed a i {
+            margin: 0;
+        }
+        /* Main content wrapper */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-wrapper.expanded {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+        /* Top header */
+        .top-header {
+            height: var(--header-height);
+            background: white;
+            border-bottom: 1px solid var(--border-light);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .header-left .page-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--junle-green);
+            margin: 0;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .search-box {
+            background: var(--bg-light);
+            border-radius: 2rem;
+            padding: 0.3rem 1rem;
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-light);
+        }
+        .search-box i {
+            color: var(--text-muted);
+            margin-right: 0.5rem;
+        }
+        .search-box input {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 0;
+            width: 200px;
+            outline: none;
+        }
+        /* Notifications dropdown */
+        .notifications {
+            position: relative;
+            cursor: pointer;
+        }
+        .notifications i {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+        }
+        .notifications .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--junle-green);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .notifications-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 300px;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
+            display: none;
+            z-index: 1000;
+            margin-top: 0.5rem;
+        }
+        .notifications:hover .notifications-dropdown {
+            display: block;
+        }
+        .notifications-dropdown .dropdown-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+            font-weight: 600;
+            color: var(--junle-green);
+        }
+        .notifications-dropdown .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: background 0.2s;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .notifications-dropdown .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        .notifications-dropdown .dropdown-item:hover {
+            background: var(--junle-green-light);
+        }
+        .notifications-dropdown .dropdown-item i {
+            color: var(--sky-blue-dark);
+        }
+        .notifications-dropdown .dropdown-item .item-title {
+            font-weight: 500;
+        }
+        .notifications-dropdown .dropdown-item .item-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .notifications-dropdown .view-all {
+            display: block;
+            padding: 0.75rem;
+            text-align: center;
+            color: var(--sky-blue-dark);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            position: relative;
+        }
+        .admin-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--sky-blue);
+        }
+        .admin-profile .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            min-width: 150px;
+            display: none;
+            z-index: 1000;
+            border: 1px solid var(--border-light);
+        }
+        .admin-profile:hover .dropdown-menu {
+            display: block;
+        }
+        .dropdown-menu a {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .dropdown-menu a:hover {
+            background: var(--junle-green-light);
+        }
+        /* Main content */
+        .main-content {
+            padding: 2rem;
+            flex: 1;
+            background: var(--bg-light);
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                left: -260px;
+            }
+            .sidebar.collapsed {
+                width: 0;
+                left: -70px;
+            }
+            .main-wrapper {
+                margin-left: 0 !important;
+            }
+            .top-header {
+                padding: 0 1rem;
+            }
+            .search-box input {
+                width: 120px;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <h3>Business2026</h3>
+            <button class="toggle-btn" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+        </div>
+        <div class="sidebar-menu">
+            <!-- Main Section -->
+            <div class="menu-section">
+                <div class="menu-section-title">Main</div>
+                <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}" title="Dashboard">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('admin.orders') }}" class="{% if request.endpoint == 'admin.orders' %}active{% endif %}" title="Orders">
+                    <i class="fas fa-shopping-cart"></i> <span>Orders</span>
+                </a>
+                <a href="{{ url_for('admin.products') }}" class="{% if request.endpoint == 'admin.products' %}active{% endif %}" title="Products">
+                    <i class="fas fa-box"></i> <span>Products</span>
+                </a>
+                <a href="{{ url_for('admin.categories') }}" class="{% if request.endpoint == 'admin.categories' %}active{% endif %}" title="Categories">
+                    <i class="fas fa-tags"></i> <span>Categories</span>
+                </a>
+                <a href="{{ url_for('admin.users') }}" class="{% if request.endpoint == 'admin.users' %}active{% endif %}" title="Customers">
+                    <i class="fas fa-users"></i> <span>Customers</span>
+                </a>
+                <a href="{{ url_for('admin.support_dashboard') }}" class="{% if request.endpoint == 'admin.support_dashboard' %}active{% endif %}" title="Support">
+                    <i class="fas fa-headset"></i> <span>Support</span>
+                </a>
+            </div>
+            <!-- Management Section -->
+            <div class="menu-section">
+                <div class="menu-section-title">Management</div>
+                <a href="{{ url_for('admin.reports') }}" class="{% if request.endpoint == 'admin.reports' %}active{% endif %}" title="Analytics">
+                    <i class="fas fa-chart-line"></i> <span>Analytics</span>
+                </a>
+                <a href="{{ url_for('admin.inventory') }}" title="Inventory">
+                    <i class="fas fa-warehouse"></i> <span>Inventory</span>
+                </a>
+                <a href="{{ url_for('admin.coupons') }}" class="{% if request.endpoint == 'admin.coupons' %}active{% endif %}" title="Promotions">
+                    <i class="fas fa-ticket-alt"></i> <span>Promotions</span>
+                </a>
+                <a href="{{ url_for('admin.promotions') }}" title="Promotions">
+                    <i class="fas fa-bullhorn"></i> <span>Promotions</span>
+                </a>
+                <a href="#" title="Inventory">
+                    <i class="fas fa-warehouse"></i> <span>Inventory</span>
+                </a>
+                <a href="{{ url_for('admin.gift_cards') }}" title="Gift Cards">
+                    <i class="fas fa-gift"></i> <span>Gift Cards</span>
+                </a>
+                <a href="{{ url_for('admin.admin_management') }}" title="Admin Management">
+                    <i class="fas fa-user-shield"></i> <span>Admin Management</span>
+                </a>
+
+
+            </div>
+            <!-- System Section -->
+            <div class="menu-section">
+                <div class="menu-section-title">System</div>
+                <a href="{{ url_for('admin.settings') }}" title="Settings">
+                    <i class="fas fa-cog"></i> <span>Settings</span>
+                </a>
+                <a href="{{ url_for('admin.admin_users') }}" title="Admin Users">
+                    <i class="fas fa-user-shield"></i> <span>Admin Users</span>
+                </a>
+                <a href="{{ url_for('auth.logout') }}" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper" id="mainWrapper">
+        <!-- Top Header -->
+        <div class="top-header">
+            <div class="header-left">
+                <h4 class="page-title">{% block page_title %}Dashboard{% endblock %}</h4>
+            </div>
+            <div class="header-right">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <!-- Dynamic Notifications Dropdown -->
+                <div class="notifications" id="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" id="notification-badge">0</span>
+                    <div class="notifications-dropdown" id="notifications-dropdown">
+                        <div class="dropdown-header">Notifications</div>
+                        <div id="notification-list">
+                            <!-- Notifications will be loaded here -->
+                            <div class="text-center p-3 text-muted">Loading...</div>
+                        </div>
+                        <a href="#" class="view-all">View all notifications</a>
+                    </div>
+                </div>
+                <div class="admin-profile">
+                    <img src="{{ url_for('static', filename='images/default-avatar.png') }}" alt="Admin">
+                    <span>{{ current_user.full_name or current_user.username }}</span>
+                    <div class="dropdown-menu">
+                        <a href="#">Profile</a>
+                        <a href="{{ url_for('auth.logout') }}">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container-fluid mt-3">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Main Content -->
+        <div class="main-content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            // Sidebar toggle
+            document.addEventListener('DOMContentLoaded', function() {
+                const sidebar = document.getElementById('adminSidebar');
+                const mainWrapper = document.getElementById('mainWrapper');
+                const toggleBtn = document.getElementById('sidebarToggle');
+
+                if (sidebar && mainWrapper && toggleBtn) {
+                    const savedState = localStorage.getItem('sidebarCollapsed');
+                    if (savedState === 'true') {
+                        sidebar.classList.add('collapsed');
+                        mainWrapper.classList.add('expanded');
+                    }
+                    toggleBtn.addEventListener('click', function() {
+                        sidebar.classList.toggle('collapsed');
+                        mainWrapper.classList.toggle('expanded');
+                        const isCollapsed = sidebar.classList.contains('collapsed');
+                        localStorage.setItem('sidebarCollapsed', isCollapsed);
+                    });
+                }
+            });
+
+            // Notifications polling
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const notificationBadge = document.getElementById('notification-badge');
+            const notificationList = document.getElementById('notification-list');
+
+            function fetchNotifications() {
+                fetch('/admin/notifications/unread')
+                    .then(res => res.json())
+                    .then(data => {
+                        // Update badge
+                        notificationBadge.textContent = data.length;
+
+                        if (data.length === 0) {
+                            notificationList.innerHTML = '<div class="text-center p-3 text-muted">No new notifications</div>';
+                        } else {
+                            notificationList.innerHTML = data.map(n => `
+                                <a href="${n.link || '#'}" class="dropdown-item" onclick="markNotificationRead(${n.id});">
+                                    <i class="fas fa-bell"></i>
+                                    <div>
+                                        <div class="item-title">${n.title}</div>
+                                        <div class="item-time">${new Date(n.created_at).toLocaleString()}</div>
+                                    </div>
+                                </a>
+                            `).join('');
+                        }
+                    })
+                    .catch(err => console.error('Error fetching notifications:', err));
+            }
+
+            window.markNotificationRead = function(notifId) {
+                fetch(`/admin/notifications/${notifId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
+                }).catch(err => console.error('Error marking read:', err));
+                // Don't wait for response, just update UI by refetching soon
+                setTimeout(fetchNotifications, 500);
+            };
+
+            // Initial fetch and poll every 10 seconds
+            document.addEventListener('DOMContentLoaded', function() {
+                fetchNotifications();
+                setInterval(fetchNotifications, 10000);
+            });
+        })();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

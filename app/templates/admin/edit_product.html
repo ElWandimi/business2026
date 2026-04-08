@@ -1,0 +1,319 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Edit Product - {{ product.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.edit-product-page {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.form-section {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+.form-section h2 {
+    color: var(--junle-green-dark);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--sky-blue-light);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.form-section h2 i {
+    color: var(--sky-blue);
+}
+.form-label {
+    font-weight: 600;
+    color: var(--junle-green-dark);
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--sky-blue);
+    box-shadow: 0 0 0 3px rgba(163, 216, 240, 0.2);
+}
+.image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.image-preview-item {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 2px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+}
+.image-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.image-preview-item .remove-image {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: rgba(255,255,255,0.9);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ef4444;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.image-preview-item .remove-image:hover {
+    background: #ef4444;
+    color: white;
+}
+.image-preview-item .primary-badge {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    background: var(--sky-blue);
+    color: white;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+.btn-variant {
+    background: var(--sky-blue);
+    color: white;
+    border: none;
+    border-radius: 2rem;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+.btn-variant:hover {
+    background: var(--sky-blue-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+.btn-save {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: 2rem;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+.btn-cancel {
+    background: white;
+    color: var(--text-muted);
+    border: 1px solid var(--border-light);
+    border-radius: 2rem;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+}
+.btn-cancel:hover {
+    background: var(--bg-light);
+    border-color: var(--text-muted);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-product-page">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3" style="color: var(--junle-green);">Edit Product: {{ product.name }}</h1>
+        <div>
+            <a href="{{ url_for('admin.admin_product_variants', product_id=product.id) }}" class="btn-variant me-2">
+                <i class="fas fa-tags"></i> Manage Variants
+            </a>
+            <a href="{{ url_for('admin.products') }}" class="btn-cancel">
+                <i class="fas fa-arrow-left"></i> Back to Products
+            </a>
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h2><i class="fas fa-info-circle"></i> Basic Information</h2>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="name" class="form-label">Product Name *</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ product.name }}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="slug" class="form-label">Slug *</label>
+                    <input type="text" class="form-control" id="slug" name="slug" value="{{ product.slug }}" required>
+                    <small class="text-muted">URL-friendly name (e.g., "my-product")</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="sku" class="form-label">SKU</label>
+                    <input type="text" class="form-control" id="sku" name="sku" value="{{ product.sku or '' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="category_id" class="form-label">Category *</label>
+                    <select class="form-select" id="category_id" name="category_id" required>
+                        <option value="">Select a category</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if cat.id == product.category_id %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="short_description" class="form-label">Short Description</label>
+                    <textarea class="form-control" id="short_description" name="short_description" rows="2">{{ product.short_description or '' }}</textarea>
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="description" class="form-label">Full Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="5">{{ product.description or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing & Attributes -->
+        <div class="form-section">
+            <h2><i class="fas fa-tag"></i> Pricing & Attributes</h2>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="base_price" class="form-label">Base Price ($) *</label>
+                    <input type="number" step="0.01" class="form-control" id="base_price" name="base_price" value="{{ product.base_price }}" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="brand" class="form-label">Brand</label>
+                    <input type="text" class="form-control" id="brand" name="brand" value="{{ product.brand or '' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="weight" class="form-label">Weight (kg)</label>
+                    <input type="number" step="0.01" class="form-control" id="weight" name="weight" value="{{ product.weight or '' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="dimensions" class="form-label">Dimensions (LxWxH cm)</label>
+                    <input type="text" class="form-control" id="dimensions" name="dimensions" value="{{ product.dimensions or '' }}" placeholder="e.g., 10x5x3">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch mt-4">
+                        <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" {% if product.is_featured %}checked{% endif %}>
+                        <label class="form-check-label" for="is_featured">Featured Product</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if product.is_active %}checked{% endif %}>
+                        <label class="form-check-label" for="is_active">Active</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Images -->
+        <div class="form-section">
+            <h2><i class="fas fa-images"></i> Product Images</h2>
+            <div class="mb-3">
+                <label for="images" class="form-label">Upload New Images (PNG, JPG, JPEG, GIF, WEBP)</label>
+                <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
+                <small class="text-muted">The first image will be set as primary. Existing images are shown below.</small>
+            </div>
+
+            <!-- Existing Images Preview -->
+            {% if product.images %}
+            <div class="image-preview">
+                {% for image in product.images %}
+                <div class="image-preview-item" data-image-id="{{ image.id }}">
+                    {# Build correct image URL #}
+                    {% if image.image_url.startswith('http') %}
+                        <img src="{{ image.image_url }}" alt="Product image">
+                    {% else %}
+                        {# Remove leading slash if present, then use uploaded_file route #}
+                        {% set filename = image.image_url.lstrip('/') %}
+                        <img src="{{ url_for('main.uploaded_file', filename=filename) }}" alt="Product image"
+                             onerror="this.src='{{ url_for('static', filename='images/no-image.png') }}'">
+                    {% endif %}
+                    <button type="button" class="remove-image" onclick="removeImage({{ image.id }})" title="Remove image">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    {% if loop.first %}
+                    <span class="primary-badge">Primary</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">No images uploaded yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons (No Duplicate) -->
+        <div class="action-buttons">
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+            <a href="{{ url_for('admin.products') }}" class="btn-cancel">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-generate slug from name
+    document.getElementById('name').addEventListener('input', function() {
+        const slug = this.value
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/--+/g, '-')
+            .trim();
+        document.getElementById('slug').value = slug;
+    });
+
+    // Remove image (AJAX)
+    function removeImage(imageId) {
+        if (!confirm('Are you sure you want to remove this image?')) return;
+        fetch(`/admin/product/image/${imageId}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelector(`.image-preview-item[data-image-id="${imageId}"]`).remove();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to remove image.');
+        });
+    }
+</script>
+{% endblock %}

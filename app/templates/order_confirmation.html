@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Order Confirmation - business2026{% endblock %}
+
+{% block extra_css %}
+<style>
+.confirmation-container {
+    max-width: 800px;
+    margin: 40px auto;
+    text-align: center;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #2E7D32, #4FC3F7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: white;
+    font-size: 2.5rem;
+    animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+.order-number {
+    font-size: 1.5rem;
+    color: #2E7D32;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.order-details {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    text-align: left;
+    margin-top: 30px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #666;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #333;
+    font-weight: 600;
+}
+
+.continue-shopping {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 15px 40px;
+    background: linear-gradient(135deg, #2E7D32, #4FC3F7);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.continue-shopping:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+    <div class="success-icon">
+        <i class="fas fa-check"></i>
+    </div>
+    
+    <h1>Thank You for Your Order!</h1>
+    <p class="order-number">Order #{{ order.order_number }}</p>
+    <p>A confirmation email has been sent to {{ order.user.email if order.user else order.shipping_email }}</p>
+    
+    <div class="order-details">
+        <h3 class="mb-4">Order Details</h3>
+        
+        <div class="detail-row">
+            <span class="detail-label">Order Date</span>
+            <span class="detail-value">{{ order.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Payment Method</span>
+            <span class="detail-value">Credit Card (Stripe)</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Payment Status</span>
+            <span class="detail-value">
+                <span class="badge bg-success">Paid</span>
+            </span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Order Status</span>
+            <span class="detail-value">
+                <span class="badge bg-info">{{ order.status }}</span>
+            </span>
+        </div>
+        
+        <h4 class="mt-4 mb-3">Items Ordered</h4>
+        
+        {% for item in order.items %}
+        <div class="detail-row">
+            <span class="detail-label">
+                {{ item.product_name }} x{{ item.quantity }}
+            </span>
+            <span class="detail-value">{{ item.total|currency }}</span>
+        </div>
+        {% endfor %}
+        
+        <div class="detail-row">
+            <span class="detail-label">Subtotal</span>
+            <span class="detail-value">{{ order.subtotal|currency }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Tax</span>
+            <span class="detail-value">{{ order.tax|currency }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Shipping</span>
+            <span class="detail-value">Free</span>
+        </div>
+        
+        {% if order.discount_amount and order.discount_amount > 0 %}
+        <div class="detail-row">
+            <span class="detail-label">Discount</span>
+            <span class="detail-value text-success">-{{ order.discount_amount|currency }}</span>
+        </div>
+        {% endif %}
+        
+        <div class="detail-row">
+            <span class="detail-label fw-bold">Total</span>
+            <span class="detail-value fw-bold text-primary">{{ order.total|currency }}</span>
+        </div>
+        
+        <h4 class="mt-4 mb-3">Shipping Address</h4>
+        
+        <div class="detail-row">
+            <span class="detail-label">Name</span>
+            <span class="detail-value">{{ order.shipping_first_name }} {{ order.shipping_last_name }}</span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Address</span>
+            <span class="detail-value">
+                {{ order.shipping_address }}<br>
+                {{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_zip }}<br>
+                {{ order.shipping_country }}
+            </span>
+        </div>
+        
+        <div class="detail-row">
+            <span class="detail-label">Phone</span>
+            <span class="detail-value">{{ order.shipping_phone }}</span>
+        </div>
+    </div>
+    
+    <a href="{{ url_for('main.products') }}" class="continue-shopping">
+        <i class="fas fa-shopping-bag me-2"></i>Continue Shopping
+    </a>
+</div>
+{% endblock %}

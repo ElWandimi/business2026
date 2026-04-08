@@ -1,0 +1,573 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout – business2026{% endblock %}
+
+{% block extra_css %}
+<style>
+.checkout-page {
+    max-width: 1280px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+/* Header */
+.checkout-header {
+    margin-bottom: 2.5rem;
+}
+.checkout-header h1 {
+    font-size: 2.2rem;
+    font-weight: 600;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+.checkout-header h1 i {
+    font-size: 2.2rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Layout */
+.checkout-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .checkout-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Shipping form card */
+.shipping-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.card-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    font-weight: 600;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.card-header i {
+    font-size: 1.3rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Form styles */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 500px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: var(--junle-green-dark);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.form-group label i {
+    color: var(--sky-blue);
+    margin-right: 0.3rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: border-color var(--transition);
+}
+.form-control:focus {
+    outline: none;
+    border-color: var(--sky-blue);
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
+}
+.form-control:hover {
+    border-color: var(--junle-green-light);
+}
+
+/* Payment section */
+.payment-section {
+    margin-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 2rem;
+}
+.payment-section h3 {
+    font-size: 1.2rem;
+    color: var(--junle-green-dark);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.payment-section h3 i {
+    color: var(--sky-blue);
+}
+
+#payment-element {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    background: #f8fafc;
+}
+#payment-element:focus-within {
+    border-color: var(--sky-blue);
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
+}
+
+/* Order summary card */
+.summary-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    position: sticky;
+    top: 2rem;
+}
+
+.summary-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    font-weight: 600;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.summary-header i {
+    font-size: 1.3rem;
+}
+
+.summary-body {
+    padding: 1.5rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    color: #475569;
+    font-size: 0.95rem;
+}
+
+.summary-row.total {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--junle-green-dark);
+    border-top: 2px solid #e2e8f0;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+/* Promo code section (UPDATED) */
+.promo-code {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+}
+
+.promo-input {
+    flex: 1;
+    padding: 0 1rem;
+    height: 40px;
+    border: 2px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    transition: border-color var(--transition);
+}
+.promo-input:focus {
+    outline: none;
+    border-color: var(--sky-blue);
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
+}
+
+.btn-apply {
+    background: white;
+    border: 2px solid var(--sky-blue);
+    color: var(--sky-blue-dark);
+    padding: 0 1.2rem;
+    height: 40px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.btn-apply:hover {
+    background: var(--sky-blue);
+    color: white;
+    border-color: var(--sky-blue);
+}
+
+/* Coupon message (reuses delivery-estimate styling with success/error variants) */
+.delivery-estimate {
+    background: #f1f5f9;
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #334155;
+    font-size: 0.9rem;
+    border-left: 4px solid transparent;
+}
+.delivery-estimate i {
+    font-size: 1.2rem;
+}
+.delivery-estimate.success {
+    background: #dcfce7;
+    color: #166534;
+    border-left-color: var(--junle-green);
+}
+.delivery-estimate.error {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-left-color: #ef4444;
+}
+
+/* Checkout button */
+.btn-pay {
+    display: block;
+    width: 100%;
+    background: var(--gradient-primary);
+    color: white;
+    text-align: center;
+    padding: 0 1rem;
+    height: 48px;
+    line-height: 48px;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    margin: 1.5rem 0 1rem;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+}
+
+.btn-pay:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--gradient-hover);
+}
+
+.btn-pay i {
+    margin-right: 0.5rem;
+}
+
+/* Error message */
+#payment-message {
+    color: #ef4444;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .checkout-header h1 {
+        font-size: 1.8rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-page">
+    <div class="checkout-header">
+        <h1>
+            <i class="fas fa-lock"></i>
+            Secure Checkout
+        </h1>
+    </div>
+
+    <div class="checkout-layout">
+        <!-- Shipping & Payment Form -->
+        <div class="shipping-card">
+            <div class="card-header">
+                <i class="fas fa-truck"></i>
+                Shipping Information
+            </div>
+            <div class="card-body">
+                <form id="payment-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first_name"><i class="fas fa-user"></i> First Name *</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   value="{{ current_user.first_name or '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="last_name"><i class="fas fa-user"></i> Last Name *</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   value="{{ current_user.last_name or '' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email"><i class="fas fa-envelope"></i> Email *</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ current_user.email or '' }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone"><i class="fas fa-phone"></i> Phone *</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" 
+                               value="{{ current_user.phone or '' }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address"><i class="fas fa-map-marker-alt"></i> Address *</label>
+                        <input type="text" class="form-control" id="address" name="address" 
+                               value="{{ current_user.address or '' }}" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City *</label>
+                            <input type="text" class="form-control" id="city" name="city" 
+                                   value="{{ current_user.city or '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State *</label>
+                            <input type="text" class="form-control" id="state" name="state" 
+                                   value="{{ current_user.state or '' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="zip_code">ZIP Code *</label>
+                            <input type="text" class="form-control" id="zip_code" name="zip_code" 
+                                   value="{{ current_user.zip_code or '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="country">Country *</label>
+                            <input type="text" class="form-control" id="country" name="country" 
+                                   value="{{ current_user.country or 'US' }}" required>
+                        </div>
+                    </div>
+
+                    <!-- Payment Section -->
+                    <div class="payment-section">
+                        <h3><i class="fas fa-credit-card"></i> Payment Details</h3>
+                        <div id="payment-element"></div>
+                        <div id="payment-message"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="summary-card">
+            <div class="summary-header">
+                <i class="fas fa-receipt"></i>
+                Order Summary
+            </div>
+            <div class="summary-body">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>{{ cart.subtotal|currency }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Tax (10%)</span>
+                    <span>{{ cart.tax|currency }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span>Free</span>
+                </div>
+                <div class="summary-row total" id="totalRow">
+                    <span>Total</span>
+                    <span id="totalAmount">{{ cart.total|currency }}</span>
+                </div>
+
+                <!-- Promo Code Section -->
+                <div class="promo-code">
+                    <input type="text" class="promo-input" id="couponCode" placeholder="Promo code">
+                    <button class="btn-apply" id="applyCouponBtn">Apply</button>
+                </div>
+                <div id="couponMessage" class="delivery-estimate" style="display: none;"></div>
+
+                <!-- Pay Button -->
+                <button form="payment-form" type="submit" class="btn-pay" id="submit-button">
+                    <i class="fas fa-lock"></i> Pay {{ cart.total|currency }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    // Initialize Stripe
+    const stripe = Stripe('{{ stripe_public_key }}');
+    const clientSecret = '{{ client_secret }}';
+    let elements;
+
+    async function initialize() {
+        elements = stripe.elements({ clientSecret });
+        const paymentElement = elements.create('payment');
+        paymentElement.mount('#payment-element');
+    }
+    initialize();
+
+    // Form submission
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit-button');
+    const messageContainer = document.getElementById('payment-message');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        const shippingInfo = {
+            first_name: document.getElementById('first_name').value,
+            last_name: document.getElementById('last_name').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value,
+            city: document.getElementById('city').value,
+            state: document.getElementById('state').value,
+            zip_code: document.getElementById('zip_code').value,
+            country: document.getElementById('country').value
+        };
+
+        const { error, paymentIntent } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: `${window.location.origin}/payment/success`,
+            },
+            redirect: 'if_required'
+        });
+
+        if (error) {
+            showMessage(error.message);
+            setLoading(false);
+        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+            processOrder(paymentIntent.id, shippingInfo);
+        } else {
+            // The payment will redirect
+        }
+    });
+
+    async function processOrder(paymentIntentId, shippingInfo) {
+        try {
+            const response = await fetch('/payment/success', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    payment_intent_id: paymentIntentId,
+                    shipping_info: shippingInfo
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                showMessage(data.error || 'An error occurred.');
+                setLoading(false);
+            }
+        } catch (err) {
+            console.error(err);
+            showMessage('An unexpected error occurred.');
+            setLoading(false);
+        }
+    }
+
+    function showMessage(message) {
+        messageContainer.textContent = message;
+        messageContainer.style.display = 'block';
+        setTimeout(() => {
+            messageContainer.style.display = 'none';
+        }, 5000);
+    }
+
+    function setLoading(isLoading) {
+        if (isLoading) {
+            submitButton.disabled = true;
+            submitButton.classList.add('loading');
+        } else {
+            submitButton.disabled = false;
+            submitButton.classList.remove('loading');
+        }
+    }
+
+    // ========== COUPON FUNCTIONALITY ==========
+    document.getElementById('applyCouponBtn').addEventListener('click', function() {
+        const code = document.getElementById('couponCode').value.trim();
+        if (!code) return;
+
+        fetch('/payment/apply-coupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ code: code })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const msgDiv = document.getElementById('couponMessage');
+            msgDiv.style.display = 'flex';
+            if (data.success) {
+                msgDiv.className = 'delivery-estimate success';
+                msgDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${data.message}`;
+                // Update displayed total (using server-provided new_total, but we'll just format with $ for now)
+                document.getElementById('totalAmount').innerText = `$${data.new_total.toFixed(2)}`;
+                // Reload after short delay to reflect updated totals server-side
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                msgDiv.className = 'delivery-estimate error';
+                msgDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.message}`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+</script>
+{% endblock %}

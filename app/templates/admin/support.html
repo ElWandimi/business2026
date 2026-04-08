@@ -1,0 +1,501 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Support Dashboard - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Two-panel layout */
+    .support-container {
+        display: flex;
+        gap: 1.5rem;
+        height: calc(100vh - 180px);
+        min-height: 600px;
+    }
+    .conversations-panel {
+        width: 350px;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: var(--shadow-md);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--border-light);
+    }
+    .chat-panel {
+        flex: 1;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: var(--shadow-md);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--border-light);
+    }
+    .panel-header {
+        padding: 1rem;
+        background: var(--d4f0d4);
+        color: var(--junle-green);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .panel-header i {
+        color: var(--sky-blue);
+    }
+    .conversation-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+    .conversation-item {
+        padding: 1rem;
+        border-radius: 0.75rem;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        position: relative;
+    }
+    .conversation-item:hover {
+        background: var(--junle-green-light);
+        border-color: var(--sky-blue);
+    }
+    .conversation-item.active {
+        background: var(--sky-blue);
+        border-color: var(--junle-green);
+    }
+    .conversation-item.active .text-muted {
+        color: #fff !important;
+        opacity: 0.9;
+    }
+    .status-badge {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+    .status-badge.open { background: #10b981; }
+    .status-badge.pending { background: #f59e0b; }
+    .status-badge.closed { background: #6b7280; }
+    .rating-badge {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: var(--junle-green-light);
+        padding: 0.2rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+    }
+    .rating-badge i {
+        color: #fbbf24;
+    }
+    .filter-bar {
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .filter-bar input, .filter-bar select {
+        padding: 0.5rem;
+        border: 1px solid var(--border-light);
+        border-radius: 2rem;
+        font-size: 0.9rem;
+    }
+    .filter-bar input {
+        flex: 1;
+        min-width: 150px;
+    }
+    .message-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+    }
+    .message {
+        margin-bottom: 1rem;
+        max-width: 80%;
+        display: flex;
+        flex-direction: column;
+    }
+    .message.user {
+        align-self: flex-end;
+    }
+    .message.support {
+        align-self: flex-start;
+    }
+    .bubble {
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        word-wrap: break-word;
+        position: relative;
+    }
+    .message.user .bubble {
+        background: var(--sky-blue);
+        color: #1e293b;
+        border-bottom-right-radius: 0.25rem;
+    }
+    .message.support .bubble {
+        background: var(--junle-green-light);
+        color: var(--junle-green-dark);
+        border-bottom-left-radius: 0.25rem;
+    }
+    .message-time {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-top: 0.2rem;
+        text-align: right;
+    }
+    .message.support .message-time {
+        text-align: left;
+    }
+    .chat-footer {
+        padding: 1rem;
+        border-top: 1px solid var(--border-light);
+        background: white;
+    }
+    .input-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .input-group textarea {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid var(--border-light);
+        border-radius: 2rem;
+        resize: none;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .input-group textarea:focus {
+        border-color: var(--sky-blue);
+    }
+    .btn-send {
+        background: var(--sky-blue);
+        color: white;
+        border: none;
+        border-radius: 2rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-send:hover {
+        background: var(--sky-blue-dark);
+    }
+    .btn-send:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .control-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    .control-btn {
+        padding: 0.4rem 1rem;
+        border-radius: 2rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+    }
+    .btn-end {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+    .btn-end:hover {
+        background: #fecaca;
+    }
+    .btn-close {
+        background: #e2e8f0;
+        color: #334155;
+    }
+    .btn-close:hover {
+        background: #cbd5e1;
+    }
+    .btn-pending {
+        background: #fef3c7;
+        color: #b45309;
+    }
+    .btn-pending:hover {
+        background: #fde68a;
+    }
+    .rating-prompt {
+        background: #f8fafc;
+        border-radius: 1rem;
+        padding: 1rem;
+        margin: 1rem 0;
+        text-align: center;
+        border: 1px solid var(--border-light);
+    }
+    .stars {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+        font-size: 2rem;
+        color: #cbd5e1;
+        cursor: pointer;
+    }
+    .stars i.active {
+        color: #fbbf24;
+    }
+    .rating-feedback {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid var(--border-light);
+        border-radius: 1rem;
+        margin: 0.5rem 0;
+    }
+    .btn-submit-rating {
+        background: var(--junle-green);
+        color: white;
+        border: none;
+        border-radius: 2rem;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .closed-marker {
+        text-align: center;
+        color: var(--text-muted);
+        font-style: italic;
+        padding: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4" style="color: var(--junle-green);">Support Dashboard</h1>
+
+    <div class="support-container">
+        <!-- Left panel: conversation list -->
+        <div class="conversations-panel">
+            <div class="panel-header">
+                <span><i class="fas fa-comments"></i> Conversations</span>
+                <span class="badge bg-secondary">{{ conversations|length }}</span>
+            </div>
+            <div class="filter-bar">
+                <input type="text" id="search-input" placeholder="Search by name or email..." value="{{ search or '' }}">
+                <select id="status-filter">
+                    <option value="all" {% if filter_status == 'all' %}selected{% endif %}>All</option>
+                    <option value="open" {% if filter_status == 'open' %}selected{% endif %}>🟢 Open</option>
+                    <option value="pending" {% if filter_status == 'pending' %}selected{% endif %}>🟡 Pending</option>
+                    <option value="closed" {% if filter_status == 'closed' %}selected{% endif %}>🔴 Closed</option>
+                </select>
+            </div>
+            <div class="conversation-list" id="conversation-list">
+                {% for conv in conversations %}
+                <div class="conversation-item" data-conv-id="{{ conv.id }}" data-status="{{ conv.status }}">
+                    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                        <span class="status-badge {{ conv.status }}"></span>
+                        <strong>{{ conv.name }}</strong>
+                        {% if conv.rating %}
+                        <span class="rating-badge">
+                            <i class="fas fa-star"></i> {{ conv.rating.rating }}/5
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-muted);">{{ conv.email }}</div>
+                    <div style="font-size: 0.8rem; margin-top: 0.25rem;">
+                        {% if conv.order_number %}Order: {{ conv.order_number }}{% endif %}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                        Last: {{ conv.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center p-3 text-muted">No conversations found</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right panel: active chat -->
+        <div class="chat-panel">
+            <div class="panel-header" id="chat-header">
+                <span><i class="fas fa-comment"></i> <span id="selected-conv-name">Select a conversation</span></span>
+                <div id="control-buttons" style="display: none;">
+                    <button class="control-btn btn-pending" onclick="updateStatus('pending')"><i class="fas fa-clock"></i> Pending</button>
+                    <button class="control-btn btn-end" onclick="updateStatus('open')"><i class="fas fa-play"></i> Reopen</button>
+                    <button class="control-btn btn-close" onclick="updateStatus('closed')"><i class="fas fa-check-circle"></i> Close</button>
+                </div>
+            </div>
+            <div id="message-container" class="message-container">
+                <!-- Messages will be loaded here -->
+            </div>
+            <div class="chat-footer" id="chat-footer" style="display: none;">
+                <div class="input-group">
+                    <textarea id="reply-message" placeholder="Type your reply..." rows="1"></textarea>
+                    <button class="btn-send" id="send-btn">Send</button>
+                </div>
+            </div>
+            <div id="closed-message" class="closed-marker" style="display: none;">
+                This conversation is closed. No further messages can be sent.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // CSRF token helper
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    }
+
+    // State
+    let currentConvId = null;
+    let currentStatus = null;
+    let ratingActive = false; // whether we are currently showing rating prompt
+
+    // Load messages for a conversation
+    function loadMessages(convId) {
+        fetch(`/admin/support/messages/${convId}`)
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('message-container');
+                container.innerHTML = '';
+                data.messages.forEach(msg => {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `message ${msg.sender}`;
+
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble';
+                    bubble.innerText = msg.message;
+
+                    const time = document.createElement('div');
+                    time.className = 'message-time';
+                    const date = new Date(msg.created_at);
+                    time.innerText = date.toLocaleString();
+
+                    msgDiv.appendChild(bubble);
+                    msgDiv.appendChild(time);
+                    container.appendChild(msgDiv);
+                });
+                container.scrollTop = container.scrollHeight;
+            })
+            .catch(err => console.error('Error loading messages:', err));
+    }
+
+    // Update conversation status
+    function updateStatus(newStatus) {
+        if (!currentConvId) return;
+        fetch(`/admin/support/${currentConvId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                currentStatus = newStatus;
+                updateUIForStatus(newStatus);
+                // Update status badge in conversation list
+                const convItem = document.querySelector(`.conversation-item[data-conv-id="${currentConvId}"]`);
+                if (convItem) {
+                    convItem.dataset.status = newStatus;
+                    // Optionally update badge color via class? We'll rely on next load.
+                }
+            } else {
+                alert('Error updating status: ' + data.error);
+            }
+        })
+        .catch(err => console.error('Error updating status:', err));
+    }
+
+    // Update UI based on conversation status
+    function updateUIForStatus(status) {
+        const footer = document.getElementById('chat-footer');
+        const closedMsg = document.getElementById('closed-message');
+        const controlButtons = document.getElementById('control-buttons');
+        if (status === 'closed') {
+            footer.style.display = 'none';
+            closedMsg.style.display = 'block';
+            // Change control buttons: show reopen, hide pending/close
+            document.querySelector('.btn-pending').style.display = 'none';
+            document.querySelector('.btn-end').style.display = 'inline-block';
+            document.querySelector('.btn-close').style.display = 'none';
+        } else {
+            footer.style.display = 'block';
+            closedMsg.style.display = 'none';
+            document.querySelector('.btn-pending').style.display = 'inline-block';
+            document.querySelector('.btn-end').style.display = 'none';
+            document.querySelector('.btn-close').style.display = 'inline-block';
+        }
+    }
+
+    // Send reply
+    document.getElementById('send-btn').addEventListener('click', function() {
+        const message = document.getElementById('reply-message').value.trim();
+        if (!currentConvId || !message) return;
+        fetch('/admin/support/reply', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ conversation_id: currentConvId, message: message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('reply-message').value = '';
+                loadMessages(currentConvId);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(err => console.error('Error sending reply:', err));
+    });
+
+    // Conversation list click
+    document.querySelectorAll('.conversation-item').forEach(item => {
+        item.addEventListener('click', function() {
+            // Remove active class from others
+            document.querySelectorAll('.conversation-item').forEach(el => el.classList.remove('active'));
+            this.classList.add('active');
+            currentConvId = this.dataset.convId;
+            currentStatus = this.dataset.status;
+            const name = this.querySelector('strong').innerText;
+            document.getElementById('selected-conv-name').innerText = name;
+            document.getElementById('control-buttons').style.display = 'block';
+            updateUIForStatus(currentStatus);
+            loadMessages(currentConvId);
+        });
+    });
+
+    // Filter and search
+    document.getElementById('status-filter').addEventListener('change', applyFilters);
+    document.getElementById('search-input').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') applyFilters();
+    });
+
+    function applyFilters() {
+        const status = document.getElementById('status-filter').value;
+        const search = document.getElementById('search-input').value;
+        window.location.href = `/admin/support?status=${status}&search=${encodeURIComponent(search)}`;
+    }
+
+    // Poll for new messages every 5 seconds if a conversation is selected
+    setInterval(() => {
+        if (currentConvId && currentStatus !== 'closed') {
+            loadMessages(currentConvId);
+        }
+    }, 5000);
+</script>
+{% endblock %}

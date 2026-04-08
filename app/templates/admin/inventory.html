@@ -1,0 +1,285 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Inventory Management - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .inventory-page {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .page-header h1 {
+        font-size: 2.2rem;
+        font-weight: 600;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+    }
+    .page-header h1 i {
+        font-size: 2.2rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .stock-input {
+        width: 80px;
+        padding: 0.3rem 0.5rem;
+        border: 1px solid var(--border-light);
+        border-radius: 0.5rem;
+        text-align: center;
+    }
+    .stock-input:focus {
+        outline: none;
+        border-color: var(--sky-blue);
+        box-shadow: 0 0 0 3px rgba(79,195,247,0.2);
+    }
+    .btn-update {
+        background: var(--sky-blue);
+        color: white;
+        border: none;
+        border-radius: 2rem;
+        padding: 0.3rem 1rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-update:hover {
+        background: var(--sky-blue-dark);
+    }
+    .product-group {
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-light);
+        border-radius: 1rem;
+        overflow: hidden;
+        background: white;
+    }
+    .product-header {
+        background: var(--sky-blue-light);
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        color: var(--junle-green-dark);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .product-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+    .variant-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .variant-table th {
+        text-align: left;
+        padding: 1rem;
+        background: #f8fafc;
+        color: var(--text-dark);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-light);
+    }
+    .variant-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border-light);
+    }
+    .variant-table tr:last-child td {
+        border-bottom: none;
+    }
+    .variant-table tr.low-stock {
+        background: #fef3c7;
+    }
+    .variant-table tr.out-of-stock {
+        background: #fee2e2;
+    }
+    .toast-notification {
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1rem 1.5rem;
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        z-index: 9999;
+        border-left: 4px solid var(--junle-green);
+        min-width: 280px;
+    }
+    .toast-notification.show {
+        transform: translateX(0);
+    }
+    .toast-notification.success {
+        border-left-color: var(--junle-green);
+    }
+    .toast-notification.error {
+        border-left-color: #ef4444;
+    }
+    .toast-notification i {
+        font-size: 1.8rem;
+    }
+    .toast-notification.success i {
+        color: var(--junle-green);
+    }
+    .toast-notification.error i {
+        color: #ef4444;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inventory-page">
+    <div class="page-header">
+        <h1><i class="fas fa-warehouse"></i> Inventory Management</h1>
+        <a href="{{ url_for('admin.products') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Products
+        </a>
+    </div>
+
+    {% set low_stock_threshold = 5 %}
+
+    {% if products %}
+        {% for product in products %}
+            {% if product.variants %}
+            <div class="product-group">
+                <div class="product-header">
+                    <h3>{{ product.name }}</h3>
+                    <span class="badge bg-info">SKU: {{ product.sku or 'N/A' }}</span>
+                </div>
+                <table class="variant-table">
+                    <thead>
+                        <tr>
+                            <th>Variant</th>
+                            <th>SKU</th>
+                            <th>Size</th>
+                            <th>Color</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for variant in product.variants %}
+                        <tr class="{% if variant.stock <= 0 %}out-of-stock{% elif variant.stock <= low_stock_threshold %}low-stock{% endif %}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if variant.image_url %}
+                                    <img src="{{ variant.image_url }}" alt="" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 0.5rem;">
+                                    {% endif %}
+                                    Variant #{{ variant.id }}
+                                </div>
+                            </td>
+                            <td><code>{{ variant.sku }}</code></td>
+                            <td>{{ variant.size or '-' }}</td>
+                            <td>
+                                {% if variant.color %}
+                                    {{ variant.color }}
+                                    {% if variant.color_code %}
+                                    <span style="display:inline-block; width:16px; height:16px; background-color:{{ variant.color_code }}; border-radius:4px; margin-left:0.3rem;"></span>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <input type="number" class="stock-input" id="stock-{{ variant.id }}" value="{{ variant.stock }}" min="0" data-variant-id="{{ variant.id }}">
+                            </td>
+                            <td>
+                                {% if variant.stock <= 0 %}
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                {% elif variant.stock <= low_stock_threshold %}
+                                    <span class="badge bg-warning">Low Stock</span>
+                                {% else %}
+                                    <span class="badge bg-success">In Stock</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn-update" onclick="updateStock({{ variant.id }})">Update</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <p>No products found.</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="toast-notification">
+    <i id="toastIcon" class="fas fa-check-circle"></i>
+    <span id="toastMessage"></span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const icon = document.getElementById('toastIcon');
+    const msg = document.getElementById('toastMessage');
+    icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    toast.className = `toast-notification ${type} show`;
+    msg.textContent = message;
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+function updateStock(variantId) {
+    const input = document.getElementById(`stock-${variantId}`);
+    const newStock = parseInt(input.value);
+    if (isNaN(newStock) || newStock < 0) {
+        alert('Please enter a valid non‑negative number.');
+        return;
+    }
+
+    fetch(`/admin/variant/${variantId}/update-stock`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ stock: newStock })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Stock updated successfully', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast('Error updating stock', 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast('Network error', 'error');
+    });
+}
+</script>
+{% endblock %}

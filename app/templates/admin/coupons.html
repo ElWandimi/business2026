@@ -1,0 +1,377 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Coupons – Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.coupons-page {
+    max-width: 1280px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.page-header h1 {
+    font-size: 2.2rem;
+    font-weight: 600;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+.page-header h1 i {
+    font-size: 2.2rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.btn-add {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+}
+.btn-add:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--gradient-hover);
+}
+
+.table-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+.table-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    font-weight: 600;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.table-header i {
+    font-size: 1.3rem;
+    margin-right: 0.5rem;
+}
+.table-header .badge {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    font-size: 0.9rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: var(--radius-full);
+}
+.table-body {
+    padding: 1.5rem;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.table th {
+    text-align: left;
+    padding: 1rem 0.75rem;
+    color: var(--junle-green-dark);
+    font-weight: 600;
+    border-bottom: 2px solid var(--sky-blue-light);
+    white-space: nowrap;
+}
+.table td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+.table tr:last-child td {
+    border-bottom: none;
+}
+.table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.badge-active, .badge-inactive {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.badge-active {
+    background: #dcfce7;
+    color: #166534;
+}
+.badge-inactive {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.action-group {
+    display: flex;
+    gap: 0.3rem;
+}
+.btn-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    background: white;
+    color: #64748b;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid #e2e8f0;
+}
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+.btn-edit {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+.btn-edit:hover {
+    background: #bae6fd;
+}
+.btn-toggle {
+    background: #fef9c3;
+    color: #854d0e;
+}
+.btn-toggle:hover {
+    background: #fde047;
+}
+.btn-delete {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+.btn-delete:hover {
+    background: #fecaca;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #64748b;
+}
+.empty-state i {
+    font-size: 3rem;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+}
+
+.toast-notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.5rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    z-index: 9999;
+    border-left: 4px solid var(--junle-green);
+    min-width: 280px;
+}
+.toast-notification.show {
+    transform: translateX(0);
+}
+.toast-notification.success {
+    border-left-color: var(--junle-green);
+}
+.toast-notification.error {
+    border-left-color: #ef4444;
+}
+.toast-notification i {
+    font-size: 1.8rem;
+}
+.toast-notification.success i {
+    color: var(--junle-green);
+}
+.toast-notification.error i {
+    color: #ef4444;
+}
+.toast-notification span {
+    font-weight: 500;
+    color: #1e293b;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="coupons-page">
+    <div class="page-header">
+        <h1><i class="fas fa-ticket-alt"></i> Coupons</h1>
+        <a href="{{ url_for('admin.add_coupon') }}" class="btn-add">
+            <i class="fas fa-plus-circle"></i> Add Coupon
+        </a>
+    </div>
+
+    <div class="table-card">
+        <div class="table-header">
+            <span><i class="fas fa-list"></i> All Coupons</span>
+            <span class="badge">{{ coupons|length }} total</span>
+        </div>
+        <div class="table-body">
+            {% if coupons %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Code</th>
+                        <th>Description</th>
+                        <th>Discount</th>
+                        <th>Min. Order</th>
+                        <th>Uses</th>
+                        <th>Expires</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for coupon in coupons %}
+                    <tr>
+                        <td>#{{ coupon.id }}</td>
+                        <td><strong>{{ coupon.code }}</strong></td>
+                        <td>{{ coupon.description or '—' }}</td>
+                        <td>
+                            {% if coupon.discount_type == 'percentage' %}
+                                {{ coupon.discount_amount }}%
+                            {% else %}
+                                ${{ "%.2f"|format(coupon.discount_amount) }}
+                            {% endif %}
+                        </td>
+                        <td>${{ "%.2f"|format(coupon.minimum_order) }}</td>
+                        <td>{{ coupon.used_count }}/{{ coupon.max_uses if coupon.max_uses > 0 else '∞' }}</td>
+                        <td>{{ coupon.expires_at.strftime('%Y-%m-%d') if coupon.expires_at else 'Never' }}</td>
+                        <td>
+                            {% if coupon.is_active %}
+                            <span class="badge-active"><i class="fas fa-check-circle"></i> Active</span>
+                            {% else %}
+                            <span class="badge-inactive"><i class="fas fa-times-circle"></i> Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                <a href="{{ url_for('admin.edit_coupon', coupon_id=coupon.id) }}" class="btn-action btn-edit" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn-action btn-toggle" onclick="toggleCoupon({{ coupon.id }})" title="Toggle status">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                <button class="btn-action btn-delete" onclick="deleteCoupon({{ coupon.id }})" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-ticket-alt"></i>
+                <p>No coupons found. Click "Add Coupon" to create one.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast-notification">
+    <i id="toastIcon" class="fas fa-check-circle"></i>
+    <span id="toastMessage"></span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const icon = document.getElementById('toastIcon');
+    const msg = document.getElementById('toastMessage');
+    icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+    toast.className = `toast-notification ${type} show`;
+    msg.textContent = message;
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+function toggleCoupon(id) {
+    fetch(`/admin/coupon/${id}/toggle`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Coupon status toggled', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast('Error toggling coupon', 'error');
+        }
+    })
+    .catch(() => showToast('Network error', 'error'));
+}
+
+function deleteCoupon(id) {
+    if (!confirm('Are you sure you want to delete this coupon?')) return;
+    fetch(`/admin/coupon/${id}/delete`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Coupon deleted', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast('Error deleting coupon', 'error');
+        }
+    })
+    .catch(() => showToast('Network error', 'error'));
+}
+</script>
+{% endblock %}

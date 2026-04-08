@@ -1,0 +1,40 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Add Admin User - Admin{% endblock %}
+
+{% block page_title %}Add Admin User{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card shadow-sm" style="max-width: 500px;">
+        <div class="card-header" style="background-color: var(--d4f0d4); color: var(--junle-green);">
+            <i class="fas fa-user-plus"></i> New Administrator
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="is_super_admin" id="is_super_admin" class="form-check-input">
+                    <label class="form-check-label" for="is_super_admin">Grant Super Admin privileges</label>
+                </div>
+
+                <button type="submit" class="btn" style="background-color: var(--sky-blue); color: #000;">Add Admin</button>
+                <a href="{{ url_for('admin.admin_users') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,531 @@
+<!-- chat_widget.html -->
+<div id="support-chat-widget">
+    <div id="chat-button" class="chat-button" onclick="toggleChat()">
+        <i class="fas fa-headset"></i>
+        <span>Support</span>
+    </div>
+    <div id="chat-panel" class="chat-panel hidden">
+        <div class="chat-header">
+            <div>
+                <span>Customer Support</span>
+                <span id="chat-status" class="status-badge"></span>
+            </div>
+            <button onclick="toggleChat()">×</button>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <!-- Messages will appear here -->
+        </div>
+        <div id="rating-area" class="rating-area hidden">
+            <p>How would you rate this support?</p>
+            <div class="stars" id="rating-stars">
+                <i class="far fa-star" data-value="1"></i>
+                <i class="far fa-star" data-value="2"></i>
+                <i class="far fa-star" data-value="3"></i>
+                <i class="far fa-star" data-value="4"></i>
+                <i class="far fa-star" data-value="5"></i>
+            </div>
+            <textarea id="rating-feedback" placeholder="Any additional feedback? (optional)" rows="2"></textarea>
+            <button onclick="submitRating()" class="submit-rating">Submit Rating</button>
+        </div>
+        <div id="chat-input-area" class="chat-input-area hidden">
+            <input type="text" id="chat-input" placeholder="Type your message...">
+            <button id="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+        <div id="user-info-form" class="user-info-form">
+            <p>Please introduce yourself:</p>
+            <input type="text" id="user-name" placeholder="Your Name *" required>
+            <input type="email" id="user-email" placeholder="Your Email *" required>
+            <input type="text" id="user-order" placeholder="Order Number (optional)">
+            <button onclick="startChat()">Start Chat</button>
+        </div>
+        <div id="closed-chat-area" class="closed-chat-area hidden">
+            <p>This conversation is closed.</p>
+            <button onclick="startNewChat()" class="new-chat-btn">Start New Chat</button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Chat widget styling - theme colors */
+#support-chat-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    font-family: 'Inter', sans-serif;
+}
+.chat-button {
+    background: linear-gradient(135deg, #2d6a4f, #40916c);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(45, 106, 79, 0.3);
+    transition: transform 0.2s;
+}
+.chat-button:hover {
+    transform: scale(1.05);
+}
+.chat-panel {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+.chat-panel.hidden {
+    display: none;
+}
+.chat-header {
+    background: linear-gradient(135deg, #2d6a4f, #40916c);
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+.status-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+    background: rgba(255,255,255,0.2);
+}
+.status-badge.open { background: #10b981; }
+.status-badge.pending { background: #f59e0b; }
+.status-badge.closed { background: #6b7280; }
+.chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+}
+.message {
+    margin-bottom: 15px;
+    max-width: 80%;
+    display: flex;
+    flex-direction: column;
+}
+.message.user {
+    align-self: flex-end;
+}
+.message.support {
+    align-self: flex-start;
+}
+.message-content {
+    padding: 10px 15px;
+    border-radius: 18px;
+    display: inline-block;
+    word-wrap: break-word;
+}
+.message.user .message-content {
+    background: #a3d8f0;
+    color: #1e293b;
+    border-bottom-right-radius: 4px;
+}
+.message.support .message-content {
+    background: #d4f0d4;
+    color: #2d6a4f;
+    border-bottom-left-radius: 4px;
+}
+.message-time {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 4px;
+}
+.message.user .message-time {
+    text-align: right;
+}
+.chat-input-area {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 10px;
+}
+.chat-input-area input {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 25px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.chat-input-area input:focus {
+    border-color: #a3d8f0;
+}
+.chat-input-area button {
+    background: #2d6a4f;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.chat-input-area button:hover {
+    background: #40916c;
+}
+.chat-input-area input:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+}
+.user-info-form {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: white;
+}
+.user-info-form input {
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+}
+.user-info-form button {
+    background: #2d6a4f;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.user-info-form button:hover {
+    background: #40916c;
+}
+.rating-area {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+}
+.rating-area p {
+    margin-bottom: 10px;
+    color: #2d6a4f;
+    font-weight: 500;
+}
+.stars {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    font-size: 1.5rem;
+    color: #cbd5e1;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+.stars i.active {
+    color: #fbbf24;
+}
+.rating-area textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    resize: none;
+}
+.submit-rating {
+    background: #a3d8f0;
+    color: #1e293b;
+    border: none;
+    border-radius: 25px;
+    padding: 8px 20px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.submit-rating:hover {
+    background: #6bb5d9;
+}
+.closed-chat-area {
+    padding: 20px;
+    text-align: center;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+}
+.closed-chat-area p {
+    color: #64748b;
+    margin-bottom: 10px;
+}
+.new-chat-btn {
+    background: #a3d8f0;
+    color: #1e293b;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+.new-chat-btn:hover {
+    background: #6bb5d9;
+}
+.hidden {
+    display: none !important;
+}
+</style>
+
+<script>
+let conversationId = null;
+let lastMessageTime = null;
+let pollingInterval = null;
+let currentStatus = null;
+let selectedRating = 0;
+
+// Helper to get CSRF token from meta tag
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
+// Check if there's an existing conversation on page load
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/support/status')
+        .then(res => res.json())
+        .then(data => {
+            if (data.has_conversation) {
+                conversationId = data.conversation_id;
+                currentStatus = data.status;
+                document.getElementById('user-info-form').classList.add('hidden');
+                if (currentStatus === 'closed') {
+                    document.getElementById('closed-chat-area').classList.remove('hidden');
+                    document.getElementById('chat-input-area').classList.add('hidden');
+                    // If not rated yet, show rating prompt
+                    if (!data.rated) { // assume backend sends 'rated' boolean
+                        document.getElementById('rating-area').classList.remove('hidden');
+                    }
+                } else {
+                    document.getElementById('chat-input-area').classList.remove('hidden');
+                    document.getElementById('closed-chat-area').classList.add('hidden');
+                }
+                updateStatusDisplay(currentStatus);
+                loadAllMessages(); // Load all messages initially
+                startPolling();
+            } else {
+                document.getElementById('user-info-form').classList.remove('hidden');
+            }
+        });
+});
+
+function toggleChat() {
+    document.getElementById('chat-panel').classList.toggle('hidden');
+}
+
+function updateStatusDisplay(status) {
+    const statusEl = document.getElementById('chat-status');
+    statusEl.className = 'status-badge ' + status;
+    let statusText = '';
+    if (status === 'open') statusText = 'Open';
+    else if (status === 'pending') statusText = 'Pending';
+    else if (status === 'closed') statusText = 'Closed';
+    statusEl.innerText = statusText;
+}
+
+function startChat() {
+    const name = document.getElementById('user-name').value.trim();
+    const email = document.getElementById('user-email').value.trim();
+    const order = document.getElementById('user-order').value.trim();
+
+    if (!name || !email) {
+        alert('Please enter your name and email.');
+        return;
+    }
+
+    fetch('/support/start', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify({ name, email, order_number: order })
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error('Failed to start conversation');
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (data.conversation_id) {
+            conversationId = data.conversation_id;
+            currentStatus = 'open';
+            document.getElementById('user-info-form').classList.add('hidden');
+            document.getElementById('chat-input-area').classList.remove('hidden');
+            document.getElementById('closed-chat-area').classList.add('hidden');
+            document.getElementById('rating-area').classList.add('hidden');
+            updateStatusDisplay('open');
+            addMessage('system', 'Thank you for contacting support. A representative will respond shortly.');
+            startPolling();
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Failed to start chat. Please try again.');
+    });
+}
+
+function startNewChat() {
+    document.getElementById('closed-chat-area').classList.add('hidden');
+    document.getElementById('user-info-form').classList.remove('hidden');
+    // Clear any existing conversation data
+    conversationId = null;
+    lastMessageTime = null;
+    currentStatus = null;
+    document.getElementById('chat-messages').innerHTML = '';
+    if (pollingInterval) clearInterval(pollingInterval);
+}
+
+function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg || !conversationId) return;
+
+    input.value = '';
+
+    // Add message to UI immediately
+    addMessage('user', msg);
+
+    fetch('/support/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify({ message: msg })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success && data.created_at) {
+            lastMessageTime = data.created_at;
+        }
+    })
+    .catch(err => console.error(err));
+}
+
+function addMessage(sender, text) {
+    const container = document.getElementById('chat-messages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${sender}`;
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    contentDiv.innerText = text;
+
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'message-time';
+    const now = new Date();
+    timeDiv.innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    msgDiv.appendChild(contentDiv);
+    msgDiv.appendChild(timeDiv);
+    container.appendChild(msgDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+function loadAllMessages() {
+    if (!conversationId) return;
+    fetch(`/support/messages?since=1970-01-01T00:00:00`)
+        .then(res => res.json())
+        .then(messages => {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = ''; // Clear existing
+            messages.forEach(msg => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${msg.sender}`;
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.innerText = msg.message;
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'message-time';
+                const date = new Date(msg.created_at);
+                timeDiv.innerText = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                msgDiv.appendChild(contentDiv);
+                msgDiv.appendChild(timeDiv);
+                container.appendChild(msgDiv);
+            });
+            container.scrollTop = container.scrollHeight;
+            if (messages.length > 0) {
+                lastMessageTime = messages[messages.length-1].created_at;
+            }
+        })
+        .catch(err => console.error(err));
+}
+
+function startPolling() {
+    if (pollingInterval) clearInterval(pollingInterval);
+    pollingInterval = setInterval(() => {
+        if (conversationId && currentStatus !== 'closed') {
+            fetch(`/support/messages?since=${encodeURIComponent(lastMessageTime || '1970-01-01T00:00:00')}`)
+                .then(res => res.json())
+                .then(messages => {
+                    if (messages.length > 0) {
+                        messages.forEach(msg => {
+                            if (msg.sender !== 'user') {
+                                addMessage(msg.sender, msg.message);
+                            }
+                            const msgTime = msg.created_at;
+                            if (!lastMessageTime || msgTime > lastMessageTime) {
+                                lastMessageTime = msgTime;
+                            }
+                        });
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+    }, 3000);
+}
+
+// Rating system
+document.querySelectorAll('#rating-stars i').forEach(star => {
+    star.addEventListener('click', function() {
+        selectedRating = this.dataset.value;
+        document.querySelectorAll('#rating-stars i').forEach(s => {
+            s.className = s.dataset.value <= selectedRating ? 'fas fa-star' : 'far fa-star';
+        });
+    });
+});
+
+function submitRating() {
+    if (!selectedRating) {
+        alert('Please select a rating.');
+        return;
+    }
+    const feedback = document.getElementById('rating-feedback').value.trim();
+    fetch(`/support/rate/${conversationId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify({ rating: selectedRating, feedback: feedback })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('Thank you for your feedback!');
+            document.getElementById('rating-area').classList.add('hidden');
+        } else {
+            alert('Error submitting rating: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(err => console.error(err));
+}
+</script>

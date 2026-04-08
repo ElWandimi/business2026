@@ -1,0 +1,595 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - WandimiMart{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 1280px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+
+    /* Header */
+    .profile-header {
+        margin-bottom: 2.5rem;
+    }
+    .profile-header h1 {
+        font-size: 2.2rem;
+        font-weight: 600;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+    .profile-header p {
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+
+    /* Tabs */
+    .profile-tabs {
+        display: flex;
+        gap: 0.5rem;
+        border-bottom: 2px solid var(--border-light);
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    .profile-tab {
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: -2px;
+    }
+    .profile-tab i {
+        font-size: 1.1rem;
+        color: var(--sky-blue);
+        transition: color 0.2s;
+    }
+    .profile-tab:hover {
+        color: var(--junle-green);
+        border-bottom-color: var(--sky-blue-light);
+    }
+    .profile-tab.active {
+        color: var(--junle-green);
+        border-bottom-color: var(--junle-green);
+        font-weight: 600;
+    }
+    .profile-tab.active i {
+        color: var(--junle-green);
+    }
+
+    /* Tab panels */
+    .tab-panel {
+        display: none;
+    }
+    .tab-panel.active {
+        display: block;
+    }
+
+    /* Cards */
+    .section-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        transition: box-shadow 0.2s;
+    }
+    .section-card:hover {
+        box-shadow: var(--shadow-lg);
+    }
+    .section-header {
+        background: linear-gradient(to right, var(--sky-blue-light), white);
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .section-header i {
+        font-size: 1.5rem;
+        color: var(--sky-blue-dark);
+    }
+    .section-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--junle-green-dark);
+        margin: 0;
+    }
+    .section-body {
+        padding: 1.5rem;
+    }
+
+    /* Form styles */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    @media (max-width: 600px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    .form-group {
+        margin-bottom: 0;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.3rem;
+        color: var(--junle-green-dark);
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border-light);
+        border-radius: 1rem;
+        font-size: 1rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--sky-blue);
+        box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
+    }
+    .form-control:read-only {
+        background: #f8fafc;
+        cursor: not-allowed;
+    }
+
+    /* Address / payment cards */
+    .address-grid, .payment-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    .address-item, .payment-item {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-light);
+        padding: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        position: relative;
+    }
+    .address-item:hover, .payment-item:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+    .address-item.default, .payment-item.default {
+        border-color: var(--sky-blue);
+        background: var(--sky-blue-light);
+    }
+    .default-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--sky-blue);
+        color: white;
+        padding: 0.2rem 0.8rem;
+        border-radius: 2rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .address-type {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+    }
+    .address-name {
+        font-weight: 600;
+        color: var(--junle-green-dark);
+        margin-bottom: 0.5rem;
+    }
+    .address-details p {
+        margin: 0.2rem 0;
+        color: #334155;
+        font-size: 0.9rem;
+    }
+    .payment-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .payment-info i {
+        font-size: 2rem;
+        color: var(--sky-blue-dark);
+    }
+    .payment-details {
+        font-weight: 500;
+    }
+    .payment-expiry {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+    .btn-sm {
+        padding: 0.4rem 1rem;
+        font-size: 0.85rem;
+        border-radius: 2rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .btn-sm i {
+        font-size: 0.9rem;
+    }
+    .btn-primary {
+        background: var(--sky-blue);
+        color: white;
+    }
+    .btn-primary:hover {
+        background: var(--sky-blue-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--border-light);
+        color: var(--text-dark);
+    }
+    .btn-outline:hover {
+        background: var(--bg-light);
+        border-color: var(--text-muted);
+    }
+    .btn-danger {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+    .btn-danger:hover {
+        background: #fecaca;
+    }
+
+    /* Order history table */
+    .order-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .order-table th {
+        text-align: left;
+        padding: 1rem 0.75rem;
+        color: var(--junle-green-dark);
+        font-weight: 600;
+        border-bottom: 2px solid var(--sky-blue-light);
+        white-space: nowrap;
+    }
+    .order-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--border-light);
+    }
+    .order-table tr:last-child td {
+        border-bottom: none;
+    }
+    .order-table tbody tr:hover {
+        background: #f8fafc;
+    }
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .badge-success { background: #dcfce7; color: #166534; }
+    .badge-warning { background: #fef9c3; color: #854d0e; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-info { background: #dbeafe; color: #1e40af; }
+
+    /* Empty states */
+    .empty-message {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 768px) {
+        .profile-tabs {
+            gap: 0.25rem;
+        }
+        .profile-tab {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>My Profile</h1>
+        <p>Manage your account, addresses, payment methods, and view your orders.</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="profile-tabs">
+        <div class="profile-tab active" onclick="switchTab('account')"><i class="fas fa-user-circle"></i> Account</div>
+        <div class="profile-tab" onclick="switchTab('addresses')"><i class="fas fa-map-marker-alt"></i> Addresses</div>
+        <div class="profile-tab" onclick="switchTab('payments')"><i class="fas fa-credit-card"></i> Payment Methods</div>
+        <div class="profile-tab" onclick="switchTab('orders')"><i class="fas fa-shopping-bag"></i> Order History</div>
+    </div>
+
+    <!-- Account Tab -->
+    <div id="tab-account" class="tab-panel active">
+        <div class="section-card">
+            <div class="section-header">
+                <i class="fas fa-user-edit"></i>
+                <h2>Personal Information</h2>
+            </div>
+            <div class="section-body">
+                <form method="POST" action="{{ url_for('auth.profile_update') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <div class="d-flex align-items-center">
+                                <input type="email" class="form-control" value="{{ user.email }}" readonly style="max-width: 300px;">
+                                 <div class="ms-3">
+                                    {% if user.is_verified %}
+                                        <span class="badge bg-success"><i class="fas fa-check-circle"></i> Verified</span>
+                                    {% else %}
+                                        <span class="badge bg-warning"><i class="fas fa-exclamation-triangle"></i> Not verified</span>
+                                        <a href="{{ url_for('auth.resend_verification') }}" class="btn btn-sm btn-outline-primary ms-2">Resend</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                            
+                        <div class="form-group">
+                            <label for="first_name">First Name</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ user.first_name or '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="last_name">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ user.last_name or '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" name="phone" class="form-control" value="{{ user.phone or '' }}">
+                        </div>
+                    </div>
+                    <div class="action-buttons" style="justify-content: flex-end; margin-top: 1.5rem;">
+                        <button type="submit" class="btn-primary btn-sm"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <i class="fas fa-lock"></i>
+                <h2>Security Settings</h2>
+            </div>
+            <div class="section-body">
+                <form method="POST" action="{{ url_for('auth.profile_update') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="current_password">Current Password</label>
+                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new_password">New Password</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" required minlength="6">
+                            <small class="text-muted">Minimum 6 characters</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_password">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        </div>
+                    </div>
+                    <div class="action-buttons" style="justify-content: flex-end; margin-top: 1.5rem;">
+                        <button type="submit" class="btn-primary btn-sm"><i class="fas fa-key"></i> Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Addresses Tab -->
+    <div id="tab-addresses" class="tab-panel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="font-size: 1.5rem; color: var(--junle-green-dark);">Your Addresses</h2>
+            <a href="{{ url_for('auth.add_address') }}" class="btn-primary btn-sm"><i class="fas fa-plus"></i> Add New Address</a>
+        </div>
+        <div class="address-grid">
+            {% for address in addresses %}
+            <div class="address-item {% if address.is_default %}default{% endif %}">
+                {% if address.is_default %}<span class="default-badge">Default</span>{% endif %}
+                <div class="address-type">{{ address.address_type|capitalize }}</div>
+                <div class="address-name">{{ address.first_name }} {{ address.last_name }}</div>
+                <div class="address-details">
+                    {% if address.company %}<p>{{ address.company }}</p>{% endif %}
+                    <p>{{ address.address_line1 }}</p>
+                    {% if address.address_line2 %}<p>{{ address.address_line2 }}</p>{% endif %}
+                    <p>{{ address.city }}, {{ address.state }} {{ address.postal_code }}</p>
+                    <p>{{ address.country }}</p>
+                    {% if address.phone %}<p>Phone: {{ address.phone }}</p>{% endif %}
+                </div>
+                <div class="action-buttons">
+                    <a href="{{ url_for('auth.edit_address', address_id=address.id) }}" class="btn-sm btn-outline"><i class="fas fa-edit"></i> Edit</a>
+                    <button class="btn-sm btn-outline" onclick="deleteAddress({{ address.id }})"><i class="fas fa-trash"></i> Delete</button>
+                    {% if not address.is_default %}
+                    <button class="btn-sm btn-primary" onclick="setDefaultAddress({{ address.id }})">Set as Default</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <p class="empty-message">No addresses saved yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Payment Methods Tab -->
+    <div id="tab-payments" class="tab-panel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="font-size: 1.5rem; color: var(--junle-green-dark);">Payment Methods</h2>
+            <button class="btn-primary btn-sm" onclick="addPaymentMethod()"><i class="fas fa-plus"></i> Add Payment Method</button>
+        </div>
+        <div class="payment-grid">
+            {% for pm in payment_methods %}
+            <div class="payment-item {% if pm.is_default %}default{% endif %}">
+                {% if pm.is_default %}<span class="default-badge">Default</span>{% endif %}
+                <div class="payment-info">
+                    <i class="fab fa-cc-{{ pm.card_brand|lower }}"></i>
+                    <div class="payment-details">
+                        <div>{{ pm.card_brand }} ****{{ pm.card_last4 }}</div>
+                        <div class="payment-expiry">Expires {{ pm.card_exp_month }}/{{ pm.card_exp_year }}</div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    {% if not pm.is_default %}
+                    <button class="btn-sm btn-primary" onclick="setDefaultPayment({{ pm.id }})">Set as Default</button>
+                    {% endif %}
+                    <button class="btn-sm btn-danger" onclick="deletePaymentMethod({{ pm.id }})"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+            </div>
+            {% else %}
+            <p class="empty-message">No payment methods saved yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Order History Tab -->
+    <div id="tab-orders" class="tab-panel">
+        <div class="section-card">
+            <div class="section-header">
+                <i class="fas fa-history"></i>
+                <h2>Recent Orders</h2>
+            </div>
+            <div class="section-body">
+                {% if orders %}
+                <div class="table-responsive">
+                    <table class="order-table">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ order.total|currency }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if order.status == 'delivered' %}badge-success
+                                        {% elif order.status == 'cancelled' %}badge-danger
+                                        {% else %}badge-warning{% endif %}">
+                                        {{ order.status|capitalize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('auth.order_detail', order_id=order.id) }}" class="btn-sm btn-outline">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="empty-message">No orders yet.</p>
+                {% endif %}
+                <div class="text-end mt-3">
+                    <a href="{{ url_for('auth.order_history') }}" class="btn-primary btn-sm">View All Orders</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchTab(tabName) {
+        // Update tab headers
+        document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Update panels
+        document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.add('active');
+    }
+
+    function deleteAddress(addressId) {
+        if (!confirm('Are you sure you want to delete this address?')) return;
+        fetch(`/auth/profile/address/${addressId}/delete`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) location.reload();
+            else alert(data.message);
+        })
+        .catch(err => alert('Error deleting address'));
+    }
+
+    function setDefaultAddress(addressId) {
+        window.location.href = `/auth/profile/address/${addressId}/edit`;
+    }
+
+    function deletePaymentMethod(pmId) {
+        if (!confirm('Are you sure you want to delete this payment method?')) return;
+        fetch(`/auth/profile/payment/${pmId}/delete`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) location.reload();
+            else alert(data.message);
+        })
+        .catch(err => alert('Error deleting payment method'));
+    }
+
+    function setDefaultPayment(pmId) {
+        fetch(`/auth/profile/payment/${pmId}/default`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) location.reload();
+            else alert(data.message);
+        })
+        .catch(err => alert('Error setting default payment'));
+    }
+
+    function addPaymentMethod() {
+        alert('Payment method addition will be implemented with Stripe Elements.');
+    }
+</script>
+{% endblock %}

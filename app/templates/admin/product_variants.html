@@ -1,0 +1,165 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Variants - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb and header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3" style="color: #2d6a4f;">Variants for: {{ product.name }}</h1>
+        <a href="{{ url_for('admin.products') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Products
+        </a>
+    </div>
+
+    <!-- Add Variant Form Card -->
+    <div class="card shadow-sm mb-4" style="border-color: #a3d8f0;">
+        <div class="card-header" style="background-color: #d4f0d4; color: #2d6a4f;">
+            <i class="fas fa-plus-circle"></i> Add New Variant
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.admin_product_variants', product_id=product.id) }}">
+                {{ form.hidden_tag() }}
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        {{ form.sku.label(class="form-label") }}
+                        {{ form.sku(class="form-control", placeholder="e.g., TSHIRT-RED-S") }}
+                        {% if form.sku.errors %}
+                            <div class="text-danger small">{{ form.sku.errors[0] }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        {{ form.size.label(class="form-label") }}
+                        {{ form.size(class="form-control", placeholder="S, M, L, XL") }}
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        {{ form.color.label(class="form-label") }}
+                        {{ form.color(class="form-control", placeholder="Red, Blue") }}
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        {{ form.color_code.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ form.color_code(class="form-control", placeholder="#RRGGBB", id="color_code_input") }}
+                            <span class="input-group-text" id="color_preview" style="width: 40px; background-color: #ffffff; border: 1px solid #ced4da;"></span>
+                        </div>
+                        <small class="text-muted">Hex code for swatch</small>
+                    </div>
+                    <div class="col-md-1 mb-3">
+                        {{ form.price_adjustment.label(class="form-label") }}
+                        {{ form.price_adjustment(class="form-control", step="0.01", placeholder="0.00") }}
+                    </div>
+                    <div class="col-md-1 mb-3">
+                        {{ form.stock.label(class="form-label") }}
+                        {{ form.stock(class="form-control", type="number", min="0") }}
+                    </div>
+                    <div class="col-md-1 mb-3">
+                        {{ form.image_url.label(class="form-label") }}
+                        {{ form.image_url(class="form-control", placeholder="Optional URL") }}
+                    </div>
+                </div>
+                <div class="form-check mb-3">
+                    {{ form.is_active(class="form-check-input") }}
+                    {{ form.is_active.label(class="form-check-label") }}
+                </div>
+                <button type="submit" class="btn" style="background-color: #a3d8f0; color: #000;">
+                    <i class="fas fa-save"></i> Add Variant
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Existing Variants Table -->
+    <div class="card shadow-sm">
+        <div class="card-header" style="background-color: #a3d8f0;">
+            <i class="fas fa-list"></i> Existing Variants
+        </div>
+        <div class="card-body">
+            {% if variants %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead style="background-color: #d4f0d4;">
+                            <tr>
+                                <th>SKU</th>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Swatch</th>
+                                <th>Price Adj.</th>
+                                <th>Stock</th>
+                                <th>Active</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for variant in variants %}
+                            <tr>
+                                <td><code>{{ variant.sku }}</code></td>
+                                <td>{{ variant.size or '-' }}</td>
+                                <td>{{ variant.color or '-' }}</td>
+                                <td>
+                                    {% if variant.color_code %}
+                                        <span style="display: inline-block; width: 30px; height: 30px; background-color: {{ variant.color_code }}; border-radius: 4px; border: 1px solid #ddd;"></span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>${{ "%.2f"|format(variant.price_adjustment) }}</td>
+                                <td>{{ variant.stock }}</td>
+                                <td>
+                                    {% if variant.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin.admin_edit_variant', variant_id=variant.id) }}" class="btn btn-sm btn-primary" style="background-color: #a3d8f0; color: #000; border: none;">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <form action="{{ url_for('admin.admin_delete_variant', variant_id=variant.id) }}" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this variant?');">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No variants yet. Add one using the form above.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Live color swatch preview
+    const colorInput = document.getElementById('color_code_input');
+    const colorPreview = document.getElementById('color_preview');
+
+    function updateColorPreview() {
+        let color = colorInput.value.trim();
+        // If empty, default white
+        if (!color) {
+            colorPreview.style.backgroundColor = '#ffffff';
+        } else {
+            // Ensure it's a valid hex (simple check)
+            if (/^#([0-9A-F]{3}){1,2}$/i.test(color)) {
+                colorPreview.style.backgroundColor = color;
+            } else {
+                colorPreview.style.backgroundColor = '#ffffff';
+            }
+        }
+    }
+
+    colorInput.addEventListener('input', updateColorPreview);
+    // Initial preview
+    updateColorPreview();
+</script>
+{% endblock %}

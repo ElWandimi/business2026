@@ -1,0 +1,123 @@
+from app import db
+from datetime import datetime
+
+class Category(db.Model):
+    __tablename__ = 'categories'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text)
+    image = db.Column(db.String(200))
+    parent_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    children = db.relationship('Category', backref=db.backref('parent', remote_side=[id]), lazy='dynamic')
+    products = db.relationship('Product', back_populates='category', lazy=True)
+    
+    def __repr__(self):
+        return f'<Category {self.name}>'
+
+
+class Product(db.Model):
+    __tablename__ = 'products'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    slug = db.Column(db.String(200), unique=True, nullable=False)
+    sku = db.Column(db.String(50), unique=True)               # optional – can be used for products without variants
+    description = db.Column(db.Text)
+    short_description = db.Column(db.String(500))
+    base_price = db.Column(db.Float, nullable=False, default=0.0)  # base price before variant adjustments
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    brand = db.Column(db.String(100))
+    weight = db.Column(db.Float)
+    dimensions = db.Column(db.String(100))
+    is_featured = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True)
+    views = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    category = db.relationship('Category', back_populates='products')
+    images = db.relationship('ProductImage', back_populates='product', lazy=True, cascade='all, delete-orphan')
+    reviews = db.relationship('Review', back_populates='product', lazy=True, cascade='all, delete-orphan')
+    variants = db.relationship('Variant', backref='product', lazy=True, cascade='all, delete-orphan')
+    
+    @property
+    def current_price(self):
+        """Return the minimum variant price, or base_price if no variants."""
+        if self.variants:
+            min_price = min((self.base_price + v.price_adjustment for v in self.variants if v.is_active), default=self.base_price)
+            return min_price
+        return self.base_price
+    
+    @property
+    def in_stock(self):
+        """Check if any variant is in stock."""
+        if self.variants:
+            return any(v.stock > 0 for v in self.variants if v.is_active)
+        return False
+    
+    @property
+    def primary_image(self):
+        if self.images and len(self.images) > 0:
+            for img in self.images:
+                if img.is_primary:
+                    return img.image_url
+            return self.images[0].image_url
+        return '/static/images/no-image.png'
+    
+    @property
+    def average_rating(self):
+        if self.reviews and len(self.reviews) > 0:
+            total = sum(review.rating for review in self.reviews if review.is_approved)
+            count = len([r for r in self.reviews if r.is_approved])
+            return round(total / count, 1) if count > 0 else 0
+        return 0
+    
+    @property
+    def review_count(self):
+        return len([r for r in self.reviews if r.is_approved]) if self.reviews else 0
+    
+    def __repr__(self):
+        return f'<Product {self.name}>'
+
+
+class Variant(db.Model):
+    __tablename__ = 'variants'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    sku = db.Column(db.String(50), unique=True, nullable=False)
+    size = db.Column(db.String(20))        # e.g., S, M, L, XL
+    color = db.Column(db.String(30))       # e.g., Red, Blue, Green
+    color_code = db.Column(db.String(7))   # hex code for UI swatch (e.g., #FF0000)
+    price_adjustment = db.Column(db.Float, default=0.0)  # can be positive or negative
+    stock = db.Column(db.Integer, default=0)
+    image_url = db.Column(db.String(200))  # optional variant-specific image
+    is_active = db.Column(db.Boolean, default=True)
+    
+    def __repr__(self):
+        return f'<Variant {self.sku}>'
+
+
+class ProductImage(db.Model):
+    __tablename__ = 'product_images'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    image_url = db.Column(db.String(500), nullable=False)
+    is_primary = db.Column(db.Boolean, default=False)
+    alt_text = db.Column(db.String(200))
+    sort_order = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    product = db.relationship('Product', back_populates='images')
+    
+    def __repr__(self):
+        return f'<ProductImage {self.id}>'
+

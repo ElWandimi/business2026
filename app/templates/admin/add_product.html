@@ -1,0 +1,160 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Add Product - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: white;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    .form-section h2 {
+        color: var(--junle-green-dark);
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--sky-blue-light);
+    }
+    .form-label {
+        font-weight: 600;
+        color: var(--junle-green-dark);
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--sky-blue);
+        box-shadow: 0 0 0 3px rgba(163, 216, 240, 0.2);
+    }
+    .btn-save {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: var(--radius-full);
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3" style="color: #2d6a4f;">Add New Product</h1>
+        <a href="{{ url_for('admin.products') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Products
+        </a>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h2><i class="fas fa-info-circle me-2" style="color: var(--sky-blue);"></i>Basic Information</h2>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="name" class="form-label">Product Name *</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="slug" class="form-label">Slug *</label>
+                    <input type="text" class="form-control" id="slug" name="slug" required>
+                    <small class="text-muted">URL-friendly name (e.g., "my-product")</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="sku" class="form-label">SKU</label>
+                    <input type="text" class="form-control" id="sku" name="sku">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="category_id" class="form-label">Category *</label>
+                    <select class="form-select" id="category_id" name="category_id" required>
+                        <option value="">Select a category</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="short_description" class="form-label">Short Description</label>
+                    <textarea class="form-control" id="short_description" name="short_description" rows="2"></textarea>
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="description" class="form-label">Full Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="5"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing & Attributes -->
+        <div class="form-section">
+            <h2><i class="fas fa-tag me-2" style="color: var(--sky-blue);"></i>Pricing & Attributes</h2>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="base_price" class="form-label">Base Price ($) *</label>
+                    <input type="number" step="0.01" class="form-control" id="base_price" name="base_price" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="brand" class="form-label">Brand</label>
+                    <input type="text" class="form-control" id="brand" name="brand">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="weight" class="form-label">Weight (kg)</label>
+                    <input type="number" step="0.01" class="form-control" id="weight" name="weight">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="dimensions" class="form-label">Dimensions (LxWxH cm)</label>
+                    <input type="text" class="form-control" id="dimensions" name="dimensions" placeholder="e.g., 10x5x3">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch mt-4">
+                        <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured">
+                        <label class="form-check-label" for="is_featured">Featured Product</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" checked>
+                        <label class="form-check-label" for="is_active">Active</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Images -->
+        <div class="form-section">
+            <h2><i class="fas fa-images me-2" style="color: var(--sky-blue);"></i>Product Images</h2>
+            <div class="mb-3">
+                <label for="images" class="form-label">Upload Images (PNG, JPG, JPEG, GIF, WEBP)</label>
+                <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
+                <small class="text-muted">The first image will be set as primary. You can reorder later.</small>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <a href="{{ url_for('admin.products') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-save">
+                <i class="fas fa-save"></i> Save Product
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-generate slug from name
+    document.getElementById('name').addEventListener('input', function() {
+        const slug = this.value
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/--+/g, '-')
+            .trim();
+        document.getElementById('slug').value = slug;
+    });
+</script>
+{% endblock %}

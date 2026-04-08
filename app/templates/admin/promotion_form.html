@@ -1,0 +1,118 @@
+{% extends "admin/base.html" %}
+
+{% block title %}New Promotion - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .promo-form {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-label {
+        font-weight: 600;
+        color: var(--junle-green-dark);
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    .form-control {
+        width: 100%;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-light);
+        padding: 0.75rem;
+        font-size: 1rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-control:focus {
+        border-color: var(--sky-blue);
+        box-shadow: 0 0 0 3px rgba(79,195,247,0.2);
+        outline: none;
+    }
+    textarea.form-control {
+        min-height: 200px;
+        font-family: monospace;
+    }
+    .btn-send {
+        background: var(--sky-blue);
+        color: white;
+        border: none;
+        border-radius: 2rem;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        box-shadow: var(--shadow-sm);
+    }
+    .btn-send:hover {
+        background: var(--sky-blue-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+    .btn-send i {
+        font-size: 1.1rem;
+    }
+    .hint {
+        margin-top: 0.25rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+    .hint code {
+        background: #f1f5f9;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3" style="color: var(--junle-green);">New Promotion</h1>
+        <a href="{{ url_for('admin.promotions') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Promotions
+        </a>
+    </div>
+    
+    <div class="card shadow-sm">
+        <div class="card-body promo-form">
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="form-group">
+                    <label for="subject" class="form-label">Subject</label>
+                    <input type="text" id="subject" name="subject" class="form-control" required placeholder="e.g., Spring Sale – 20% Off Everything!">
+                </div>
+                
+                <div class="form-group">
+                    <label for="html_content" class="form-label">HTML Content</label>
+                    <textarea id="html_content" name="html_content" class="form-control" required placeholder='<h1>Hello {{ "{{ user.full_name }}" }}!</h1>...'></textarea>
+                    <div class="hint">
+                        <i class="fas fa-info-circle"></i> You can use Jinja2 variables like 
+                        <code>{{ "{{ user.full_name }}" }}</code> and <code>{{ "{{ unsubscribe_url }}" }}</code>.
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="segment" class="form-label">Segment</label>
+                    <select id="segment" name="segment" class="form-control">
+                        <option value="all">All active users</option>
+                        <option value="verified">Verified users only</option>
+                        <option value="has_orders">Users with at least one order</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-send">
+                    <i class="fas fa-paper-plane"></i> Send Promotion
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

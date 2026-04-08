@@ -1,0 +1,194 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Reviews - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-star me-2"></i>Manage Reviews</h1>
+        <div class="btn-group">
+            <a href="{{ url_for('reviews.admin_reviews', status='pending') }}" 
+               class="btn {% if status == 'pending' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                Pending
+            </a>
+            <a href="{{ url_for('reviews.admin_reviews', status='approved') }}" 
+               class="btn {% if status == 'approved' %}btn-success{% else %}btn-outline-success{% endif %}">
+                Approved
+            </a>
+            <a href="{{ url_for('reviews.admin_reviews', status='all') }}" 
+               class="btn {% if status == 'all' %}btn-info{% else %}btn-outline-info{% endif %}">
+                All
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header" style="background: linear-gradient(135deg, var(--junle-green), var(--sky-blue)); color: white;">
+            <h5 class="mb-0">Reviews ({{ reviews.total }})</h5>
+        </div>
+        <div class="card-body">
+            {% if reviews.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Product</th>
+                            <th>User</th>
+                            <th>Rating</th>
+                            <th>Review</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for review in reviews.items %}
+                        <tr>
+                            <td>{{ review.id }}</td>
+                            <td>
+                                <a href="{{ url_for('main.product_detail', slug=review.product.slug) }}" target="_blank">
+                                    {{ review.product.name|truncate(30) }}
+                                </a>
+                            </td>
+                            <td>{{ review.user.username }}</td>
+                            <td>
+                                <span class="text-warning">
+                                    {% for i in range(5) %}
+                                        {% if i < review.rating %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                            </td>
+                            <td>
+                                <strong>{{ review.title or '' }}</strong><br>
+                                <small>{{ review.comment|truncate(50) }}</small>
+                            </td>
+                            <td>{{ review.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if review.is_approved %}
+                                <span class="badge bg-success">Approved</span>
+                                {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                                {% if review.is_verified %}
+                                <span class="badge bg-info">Verified</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    {% if not review.is_approved %}
+                                    <button class="btn btn-sm btn-success" onclick="approveReview({{ review.id }})">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn btn-sm btn-danger" onclick="deleteReview({{ review.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if reviews.pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if reviews.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('reviews.admin_reviews', page=reviews.prev_num, status=status) }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in reviews.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num == reviews.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('reviews.admin_reviews', page=page_num, status=status) }}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if reviews.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('reviews.admin_reviews', page=reviews.next_num, status=status) }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-star fa-4x text-muted mb-3"></i>
+                <h5>No reviews found</h5>
+                <p class="text-muted">There are no reviews matching your criteria.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function approveReview(reviewId) {
+    fetch(`/reviews/admin/review/${reviewId}/approve`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error approving review');
+    });
+}
+
+function deleteReview(reviewId) {
+    if (!confirm('Are you sure you want to delete this review?')) {
+        return;
+    }
+    
+    fetch(`/reviews/review/${reviewId}/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error deleting review');
+    });
+}
+</script>
+{% endblock %}
