@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from datetime import timedelta
 
-# Load environment variables from .env file
+# Load environment variables from .env file (if present)
 load_dotenv()
 
 class Config:
@@ -31,18 +31,21 @@ class Config:
     LOGS_DIR = basedir / 'logs'
     
     # ============ DATABASE CONFIGURATION ============
+    # Default SQLite (development)
     os.makedirs(INSTANCE_DIR, exist_ok=True)
     db_path = INSTANCE_DIR / 'business2026.db'
+    DEFAULT_DATABASE_URI = f'sqlite:///{db_path}'
     
-    # Use absolute path to ensure correct database file
-    SQLALCHEMY_DATABASE_URI = f'sqlite:///{db_path}'
+    # For production, prefer DATABASE_URL environment variable
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or DEFAULT_DATABASE_URI
     
-    # Check for environment override and warn if it differs
-    env_db_uri = os.environ.get('DATABASE_URL')
-    if env_db_uri and env_db_uri != SQLALCHEMY_DATABASE_URI:
-        print(f"⚠️  WARNING: DATABASE_URL environment variable is set to '{env_db_uri}'")
-        print(f"   but app is configured to use '{SQLALCHEMY_DATABASE_URI}'")
-        print("   To avoid confusion, unset DATABASE_URL or update it to match.")
+    # Only show warning in development if DATABASE_URL mismatches
+    if os.environ.get('FLASK_ENV') != 'production':
+        env_db_uri = os.environ.get('DATABASE_URL')
+        if env_db_uri and env_db_uri != DEFAULT_DATABASE_URI:
+            print(f"⚠️  WARNING: DATABASE_URL environment variable is set to '{env_db_uri}'")
+            print(f"   but app is configured to use '{DEFAULT_DATABASE_URI}'")
+            print("   To avoid confusion, unset DATABASE_URL or update it to match.")
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -52,7 +55,6 @@ class Config:
     }
     
     # ============ UPLOAD CONFIGURATION ============
-    # Force absolute path – ignore environment variable to avoid relative path issues
     UPLOAD_FOLDER = str(UPLOAD_BASE_DIR)
     MAX_CONTENT_LENGTH = int(os.environ.get('MAX_CONTENT_LENGTH') or 16 * 1024 * 1024)  # 16MB
     
@@ -171,7 +173,6 @@ class Config:
     BABEL_TRANSLATION_DIRECTORIES = 'translations'
 
 
-
 class DevelopmentConfig(Config):
     """Development configuration."""
     DEBUG = True
@@ -215,27 +216,36 @@ class ProductionConfig(Config):
     DEBUG = False
     ENV = 'production'
     
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or Config.SQLALCHEMY_DATABASE_URI
+    # Override database URI to use DATABASE_URL (PostgreSQL on Render)
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or Config.DEFAULT_DATABASE_URI
+    
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     REMEMBER_COOKIE_SECURE = True
     REMEMBER_COOKIE_HTTPONLY = True
     
-    CACHE_TYPE = os.environ.get('CACHE_TYPE', 'redis')
-    CACHE_REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
-    RATELIMIT_STORAGE_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+    CACHE_TYPE = os.environ.get('CACHE_TYPE', 'simple')  # Redis would require paid add‑on
+    CACHE_REDIS_URL = os.environ.get('REDIS_URL', None)
+    RATELIMIT_STORAGE_URL = os.environ.get('REDIS_URL', 'memory://')
     
     WTF_CSRF_ENABLED = True
     WTF_CSRF_SSL_STRICT = True
     LOG_LEVEL = 'WARNING'
     
+    # In production, static files should be served by a CDN or separate server
+    # But Render handles it fine.
+    
     def __init__(self):
         if not self.STRIPE_PUBLIC_KEY or not self.STRIPE_SECRET_KEY:
-            raise ValueError("STRIPE_PUBLIC_KEY and STRIPE_SECRET_KEY must be set in production")
-        if self.STRIPE_PUBLIC_KEY.startswith('pk_test_'):
-            print("⚠️  WARNING: Using Stripe TEST keys in production!")
-        elif self.STRIPE_PUBLIC_KEY.startswith('pk_live_'):
-            print("✅ Stripe LIVE keys configured")
+            print("⚠️  WARNING: STRIPE_PUBLIC_KEY or STRIPE_SECRET_KEY not set")
+        else:
+            if self.STRIPE_PUBLIC_KEY.startswith('pk_test_'):
+                print("⚠️  WARNING: Using Stripe TEST keys in production!")
+            elif self.STRIPE_PUBLIC_KEY.startswith('pk_live_'):
+                print("✅ Stripe LIVE keys configured")
+        
+        # Warn about upload persistence
+        print("ℹ️  Uploads are stored locally. For production, use cloud storage (S3/Cloudinary).")
 
 
 # Configuration dictionary
@@ -297,7 +307,8 @@ if __name__ == '__main__':
     print("\n" + "=" * 50)
     print("CONFIGURATION SUMMARY")
     print("=" * 50)
-    print(f"Environment: {os.environ.get('FLASK_ENV', 'development')}")
+    env = os.environ.get('FLASK_ENV', 'development')
+    print(f"Environment: {env}")
     print(f"Instance directory: {Config.INSTANCE_DIR}")
     print(f"Database: {Config.SQLALCHEMY_DATABASE_URI}")
     print(f"Upload base: {Config.UPLOAD_BASE_DIR}")
