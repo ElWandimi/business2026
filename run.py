@@ -1,38 +1,24 @@
-#this my current run.py
-
 """
 Business2026 Application Entry Point
-Run this file to start the Flask development server on port 5001.
+Run this file to start the Flask development server.
+For production, use gunicorn: gunicorn run:app
 """
 
-from app import create_app, db
-from app.models import User, Product, Order, OrderItem, Cart, CartItem
-import os
-import sys
-
-#!/usr/bin/env python3
 import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-# Load .env explicitly
+# Load .env explicitly (useful for development)
 env_path = Path(__file__).parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
 from app import create_app, db
+from app.models import User, Product, Order, OrderItem, Cart, CartItem
 
+# Create the Flask application instance
 app = create_app()
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
-
-app = create_app()
-
-if __name__ == '__main__':
-    # Use port 5001 consistently
-    port = int(os.environ.get('FLASK_RUN_PORT', 5001))
-    app.run(debug=True, host='0.0.0.0', port=port)
-# Add shell context for Flask shell
+# ============ SHELL CONTEXT ============
 @app.shell_context_processor
 def make_shell_context():
     """Make these objects available in the Flask shell."""
@@ -46,7 +32,7 @@ def make_shell_context():
         'CartItem': CartItem
     }
 
-# CLI Commands
+# ============ CLI COMMANDS ============
 @app.cli.command("init-db")
 def init_db_command():
     """Initialize the database with tables."""
@@ -123,7 +109,7 @@ def drop_db_command():
     else:
         print("❌ Operation cancelled.")
 
-# Error handlers
+# ============ ERROR HANDLERS ============
 @app.errorhandler(404)
 def not_found_error(error):
     """Handle 404 errors."""
@@ -135,7 +121,7 @@ def internal_error(error):
     db.session.rollback()
     return {"error": "Internal server error"}, 500
 
-# Request handlers
+# ============ REQUEST HANDLERS ============
 @app.before_request
 def before_request():
     """Do something before each request."""
@@ -146,7 +132,7 @@ def after_request(response):
     """Do something after each request."""
     return response
 
-# Template context processors
+# ============ TEMPLATE CONTEXT PROCESSORS ============
 @app.context_processor
 def utility_processor():
     """Make utility functions available in templates."""
@@ -171,10 +157,11 @@ def utility_processor():
         format_date=format_date
     )
 
+# ============ DEVELOPMENT SERVER ============
 if __name__ == '__main__':
     # Get configuration from environment variables
     debug_mode = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
-    port = int(os.environ.get('FLASK_RUN_PORT', 5001))  # Default to 5001
+    port = int(os.environ.get('FLASK_RUN_PORT', 5001))
     host = os.environ.get('FLASK_RUN_HOST', '0.0.0.0')
     
     # Print startup banner
