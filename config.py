@@ -217,7 +217,11 @@ class ProductionConfig(Config):
     ENV = 'production'
     
     # Override database URI to use DATABASE_URL (PostgreSQL on Render)
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or Config.DEFAULT_DATABASE_URI
+    db_uri = os.environ.get('DATABASE_URL')
+    if db_uri and 'postgres' in db_uri and 'sslmode' not in db_uri:
+        # Add sslmode=require for Render PostgreSQL
+        db_uri += '?sslmode=require'
+    SQLALCHEMY_DATABASE_URI = db_uri or Config.DEFAULT_DATABASE_URI
     
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
@@ -232,9 +236,6 @@ class ProductionConfig(Config):
     WTF_CSRF_SSL_STRICT = True
     LOG_LEVEL = 'WARNING'
     
-    # In production, static files should be served by a CDN or separate server
-    # But Render handles it fine.
-    
     def __init__(self):
         if not self.STRIPE_PUBLIC_KEY or not self.STRIPE_SECRET_KEY:
             print("⚠️  WARNING: STRIPE_PUBLIC_KEY or STRIPE_SECRET_KEY not set")
@@ -246,6 +247,7 @@ class ProductionConfig(Config):
         
         # Warn about upload persistence
         print("ℹ️  Uploads are stored locally. For production, use cloud storage (S3/Cloudinary).")
+        print(f"ℹ️  Database URI: {self.SQLALCHEMY_DATABASE_URI[:50]}...")
 
 
 # Configuration dictionary
